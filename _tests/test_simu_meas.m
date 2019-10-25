@@ -30,12 +30,12 @@ plt_typ = 'abs';
 % uniquement sur la frontière) ; 
 % ('Propagator') Utilise le propagateur
 % défini par Williams dans 'Intensity vector reconstruction'. 
-sim_method = 'Propagator';
+sim_method = 'Brute';
 
 % Microphone array radius
 a = 15e-2;
 % radius of the sphere where the simulation is computed
-r_cmp = 2*a;
+r_cmp = a;
 % fréquence de travail [Hz]
 f = 1000;
 % Maximum order (Bessel, Hankel, SH)

@@ -94,7 +94,7 @@ for n = 0 : pp_simu.MaxOrder
             [hn_r,~,~] = SphericalHankel1(n,k*r_mic);
             Gn = ((jn_r * dhn_a - djn_a * hn_r)./dhn_a) .* hn_r0;
             p_tmp = p_tmp + Gn * SH_sum;
-            gain = 4*pi*1i;
+            gain = 4*pi*(1i)^n;
         otherwise
             warning('Default case : Green Neumann')
             p_tmp = hn_r0/dhn_a * SH_sum;

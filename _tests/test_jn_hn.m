@@ -30,10 +30,10 @@ dr = .01;
 r_in = 0 : dr : 20;
 % r_in = 2;
 % max function order
-n = 0;
+n = 6;
 
 % Spherical Bessel function
-[hn,dhn,r] = SphericalHankel1(n,r_in,method);
+[hn,dhn,r] = SphericalHankel1(n,r_in);
 [jn,djn,~,~,~] = SphericalBessel(n,r_in);
 
 % test validity of the differentiation using Wronksian relation 

@@ -45,22 +45,23 @@ az = 0 : dx*2 : 2*pi;
 [phi,theta] = meshgrid(az,elev);
 
 % Legendre associated function's degree 
-n = 2;
-m = 2;
+n = 4;
+m = 1;
 
 % valeur de l'harmonique sphérique pour cette vvaleur d'angle
 pp = struct('norm',1,...
-            'doplot',1);
+            'doplot',0);
 [Y] = getSphericalHarmonics(theta,phi,n,m,pp);
+
 %% test fonction de visualisation
 P = 2;
 pp = struct(...
-            'pltype','3Dplot',...
+            'pltype','2Dplot',...
             'valtype','real',...
             'orders',[n m],...
             'fontsize',12);
 
-SHvisualization(theta,phi,Y,pp);
+h_SH = SHvisualization(pp,theta,phi,Y);
 
 
 
@@ -88,7 +89,7 @@ if docomp
     h2 = figure('Name','Theoretical SH');
     
     % cartesian coordinates of the theoretical SH
-    [Xth,Yth,Zth] = sph2cart(phi,theta-pi/2,abs(Y_th));
+    [Xth,Yth,Zth] = sph2cart(phi,theta-pi/2,real(Y_th));
     
     surf(Xth,Yth,Zth,real(Y_th))
     shading('interp')
