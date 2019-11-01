@@ -1,20 +1,10 @@
 % test calcul coefficients de Fourier
 
 clear; clc; 
-close all
+% close all
 
-%% initialisation
-% matlabhome = 'H:\Mes documents\5A\Projet_5A\19_10_spherical_NAH\';
-matlabhome = 'D:\Users\e152210\19_10_spherical_NAH\';
-simu_path = [matlabhome 'simulation\'];
-plot_path = [matlabhome 'plot\'];
-sph_func_path = [matlabhome 'spherical_functions\'];
-data_path = [matlabhome 'data\'];
-
-addpath(plot_path);
-addpath(sph_func_path);
-addpath(simu_path);
-addpath(data_path);
+tmp_home = 'C:\Users\Théo\Documents\1_WORK\01_ENSIM\5A\Projet 5A\Spherical-Aoustic-Holography\';
+data_path = [tmp_home 'data\'];
 
 %% paramètres
 sim_method = 'GN';
@@ -22,7 +12,7 @@ a = 15e-2;
 % fréquence de travail [Hz]
 f = 1000;
 % Maximum order (Bessel, Hankel, SH)
-Nmax = 6;
+Nmax = 5;
 
 %%% Autres paramètres
 % débit de la source [m^3/s]
@@ -40,7 +30,7 @@ zs = 0.5;
 
 
 
-%% chargemet des positions des micros
+%% chargement des positions des micros
 Nmic = 36;
 filename =  '3Dcam36Officiel.txt';
 fID = fopen([data_path filename],'r');
@@ -83,6 +73,6 @@ end
 
 %% Calcul des coefficients de Fourier
 
-[Pmn,cond] = SphericalFourierCoeff(Ymn,P);
+[Pmn,cond] = solveIllPosedProblem(Ymn,P);
 
 
