@@ -15,22 +15,16 @@ clear; clc;
 close all;
 
 %% initialisation
-matlabhome = 'H:\Mes documents\5A\Projet_5A\19_10_spherical_NAH\';
-plot_path = [matlabhome 'plot\'];
-sph_func_path = [matlabhome 'spherical_functions\'];
-
 set(0, 'defaultAxesTickLabelInterpreter','latex'); 
 set(0, 'defaultLegendInterpreter','latex');
-
-addpath(plot_path);
-addpath(sph_func_path);
-
+doprint = 1;
+impath = 'H:\Mes documents\5A\Projet_5A\Images\';
 %% paramètres
 dr = .01;
 r_in = 0 : dr : 20;
 % r_in = 2;
 % max function order
-n = 0;
+n = 5;
 
 % Spherical Bessel function
 [hn,dhn,r] = SphericalHankel1(n,r_in);
@@ -61,8 +55,13 @@ pp = struct('diff_hn',dhn,...
             'order',n,...
             'fontsize',12,...
             'x_label','Radius r');
-RadialFuncVisu(hn,r,pp);
+h1 = RadialFuncVisu(hn,r,pp);
 
+if doprint
+   fname = sprintf('Bessel_order_%02d',n);
+    outName = getOutFileName(impath,fname,'.eps');
+    print(h1,outName,'-depsc'); 
+end
 
 %% Comparison Gn and Gn_th
 
@@ -82,12 +81,13 @@ xlabel('Rayon $r$','interpreter','latex');
 ylabel("$G_{n}(r) = j_n(r)y_n'(r) - j_n'(r)y_n(r)$",'interpreter','latex')
 legend('Theorie','Calcul')
 
-impath = 'H:\Mes documents\5A\Projet_5A\Images\';
-fname = 'Wronskien_jn_yn';
 
-outName = getOutFileName(impath,fname,'.eps');
-print(h,outName,'-depsc');
+if doprint    
+    fname = 'Wronskien_jn_yn';
 
+    outName = getOutFileName(impath,fname,'.eps');
+    print(h,outName,'-depsc');
+end
 %%%
 
 h4 = figure('Name','Bessel Hankel');
@@ -107,11 +107,12 @@ xlabel('Rayon $r$','interpreter','latex');
 ylabel("$G_{n}(r) = j_n(r)h_n'(r) - j_n'(r)h_n(r)$",'interpreter','latex')
 legend('Theorie','Calcul')
 
-fname = 'Wronskien_jn_hn';
+if doprint
+    fname = 'Wronskien_jn_hn';
 
-outName = getOutFileName(impath,fname,'.eps');
-print(h4,outName,'-depsc');
-
+    outName = getOutFileName(impath,fname,'.eps');
+    print(h4,outName,'-depsc');
+end
 
 
 
