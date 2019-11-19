@@ -1,37 +1,21 @@
 function [Y] = getSphericalHarmonics(theta,phi,n,m,pp)  
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % [Y] = getSphericalHarmonics(theta,phi,n,m,pp)  
 % 
 % Function calculating the spherical harmonic for given degree N and order
 % M.
 % Theta is the azimuth angle. Phi is the elevation angle. 
-% 
-% Inputs : 
-%   * theta = whole elevation angle grid (should be a 2D matrix). This 
-%   angle should vary between [0 \pi].
-%   * phi   = whole azimuthal angle grid (should be a 2D matrix). This 
-%    angle should vary between [0 2\pi].
-%   * n     = spherical harmonic order (i.e. associated Legendre function
-%   order)
-%   * m     = spherical harmonic degree. Should belong to the interval [-n
-%   n]. 
-%   * pp    = structure containing different parameters which are defined 
-%   below :
-%                   pp = struct('norm',1,'doplot',1);
-%
-%   norm : normalisation de l'harmonique sphérique
-%   doplot : plot the associated legendre function (elevation function)
-%
-% Output :
-%   * Y   = Matrix cotaining spherical harmonic for each angle. It is the
-%   same size as theta and phi. For instance, the value Y(i,j) is
-%   associated to the angles theta(i,j) and phi(i,j) on the grid.
+% The structure pp contains different parameters which are defined below :
+%   pp = struct('norm',1,... 
+%               'doplot',1);
+% norm : normalisation de l'harmonique sphérique
+% doplot : plot the associated legendre function (elevation function)
 %
 % see also legendre 
 %
 % Théo Mariotte - 15/10/2019 - S-NAH (ENSIM)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 % Function initialization
 if nargin < 5
     pp = struct('norm',1,...
@@ -97,7 +81,7 @@ Y = reshape(Y,sz);
 
 % plot the current associated legendre function
 if pp.doplot
-    figure('Name',sprintf('Associated Legendre function : degree %d ; order %d',n,m));
+    hh = figure('Name',sprintf('Associated Legendre function : degree %d ; order %d',n,m));
     plot(theta(1:sz(1)),Pmn(1:sz(1)),'k','linewidth',2)
     xlabel('Elevation angle $\theta$','interpreter','latex')
     title(sprintf('Associated Legendre function $P_{%d}^{%d}$',n,m),'interpreter','latex')
