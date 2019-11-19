@@ -1,10 +1,29 @@
 function hh = SHvisualization(pp,theta,phi,Y)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% pp = struct(...
+% hh = SHvisualization(pp,theta,phi,Y) 
+%
+% Function plotting a given spherical harmonic on the grid theta/phi. 3
+% different types of plots are available :
+%   - classical 3D plot 
+%   - projection of the harmonic on a sphere
+%   - projection of the spherical harmonic on the 3 2D planes of the space.
+%
+% Inputs :
+%   * pp    = structure containing parameters to plot. See default
+%   parameters and their sigi=nification below.
+%   * theta = grid of elevation angle
+%   * phi   = grid of azimuthal angle
+%   * Y     = complex sphercal harmonics
+%pp = struct(...
 %             'pltype','3Dplot',...
 %             'valtype','real',...
 %             'orders',[n m],...
 %             'fontsize',12)
+%
+% Output : 
+%   *hh = handle of the figure
+%
+% Théo Mariotte - 10/2019 - ENSIM (SNAH project)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
