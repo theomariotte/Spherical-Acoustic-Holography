@@ -1,10 +1,37 @@
 function hh = SHvisualization(pp,theta,phi,Y)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% pp = struct(...
-%             'pltype','3Dplot',...
-%             'valtype','real',...
-%             'orders',[n m],...
-%             'fontsize',12)
+% hh = SHvisualization(pp,theta,phi,Y) 
+%
+% Function plotting a given spherical harmonic on the grid theta/phi. 3
+% different types of plots are available :
+%   - classical 3D plot 
+%   - projection of the harmonic on a sphere
+%   - projection of the spherical harmonic on the 3 2D planes of the space.
+%
+% Inputs :
+%   * pp    = structure containing parameters to plot. See default
+%   parameters and their sigi=nification below.
+%   * theta = grid of elevation angle
+%   * phi   = grid of azimuthal angle
+%   * Y     = complex spherical harmonic values associated with each angle
+%   location. 
+%
+% Default parameters :
+%
+%   pp = struct('pltype','3Dplot',...
+%               'valtype','real',...
+%               'orders',[n m],...
+%               'fontsize',12)
+% 
+% pltype   : plot type ('3Dplot','3Dsphere','2Dplot')
+% valtype  : type of value plotted ('real' or 'imaginary' parts) 
+% order of plotted spherical harmonic (only for figure title) [n m]
+% fontsize : font size for plots
+%
+% Outputs :
+%   *hh    = figure handle containing spherical harmonic.
+%
+% Théo Mariotte - 10/2019 - ENSIM (SNAH project)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
@@ -25,10 +52,9 @@ end
 
 % Set interpreter to LaTeX
 set(groot, 'defaultAxesTickLabelInterpreter','latex'); set(groot, 'defaultLegendInterpreter','latex');
-  
 
 if nargout == 0
-   hh = []; 
+   error('Please specify an output figure handle.') 
 end
 
 % Get the order of the current harmonic
@@ -55,7 +81,7 @@ hh = figure('Name','Spherical Harmonics visualization');
 % select the type of plot
 
 switch pp.pltype
-    case '3Dplot'
+    case '3Dplot';
         
         % cartesian frame
         theta = theta - pi/2;
@@ -67,8 +93,6 @@ switch pp.pltype
         xlabel('X')
         ylabel('Y')
         zlabel('Z')
-%         max_ax = max(max(Y2plot));
-%         set(gca,'xlim',[0 max_ax],'ylim',[0 max_ax],'zlim',[0 max_ax])
         colormap('jet')
         axis('equal')
         set(gca,'fontsize',pp.fontsize)
@@ -134,8 +158,15 @@ switch pp.pltype
         set(ax3,'fontsize',pp.fontsize)
         title('XZ plane projection','interpreter','latex');
         axis('equal')
+        
     otherwise
-
+        close(hh);
+        fprintf('--------------------------------------------------------\n');
+        fprintf('No plot configuration found. Please try one of these :\n');
+        fprintf('   -> Classical 3D plot    : <%s>\n','3Dplot');
+        fprintf('   -> 3D sphere projection : <%s>\n','3Dsphere');
+        fprintf('   -> 2D plane projection  : <%s>\n','2Dplot');
+        fprintf('--------------------------------------------------------\n');
 end 
 
 end

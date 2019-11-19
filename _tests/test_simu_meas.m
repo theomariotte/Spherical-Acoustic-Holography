@@ -2,20 +2,6 @@
 clear; clc;
 close all;
 
-%% initialisation
-
-% matlabhome = 'H:\Mes documents\5A\Projet_5A\19_10_spherical_NAH\';
-matlabhome = 'D:\Users\e152210\19_10_spherical_NAH\';
-simu_path = [matlabhome 'simulation\'];
-plot_path = [matlabhome 'plot\'];
-sph_func_path = [matlabhome 'spherical_functions\'];
-data_path = [matlabhome 'data\'];
-
-addpath(plot_path);
-addpath(sph_func_path);
-addpath(simu_path);
-addpath(data_path);
-
 %% Paramètres
 
 % type de calcul : (1) antenne analytique ; (2) vraies positions

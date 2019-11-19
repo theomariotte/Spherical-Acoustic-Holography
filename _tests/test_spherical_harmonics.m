@@ -19,15 +19,8 @@ close all;
 
 %% Initialization
 
-matlabhome = 'H:\Mes documents\5A\Projet_5A\19_10_spherical_NAH\';
-plot_path = [matlabhome 'plot\'];
-sph_func_path = [matlabhome 'spherical_functions\'];
-
 set(0, 'defaultAxesTickLabelInterpreter','latex'); 
 set(0, 'defaultLegendInterpreter','latex');
-
-addpath(plot_path);
-addpath(sph_func_path);
 
 % distance bewteen each angle
 dx = pi/200;
@@ -56,7 +49,7 @@ pp = struct('norm',1,...
 %% test fonction de visualisation
 P = 2;
 pp = struct(...
-            'pltype','3Dplot',...
+            'pltype','1Dplot',...
             'valtype','real',...
             'orders',[n m],...
             'fontsize',12);

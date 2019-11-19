@@ -100,8 +100,8 @@ else
 
         if pp.compute_condition
             [~,Singular,~] = svd(X);
-            max_S = max(max(Singular));
-            min_S = min(min(Singular));
+            max_S = max(diag(Singular));
+            min_S = min(diag(Singular));
             condition = max_S/min_S;
             varargout{1} = condition;
         end

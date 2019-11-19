@@ -10,9 +10,9 @@ data_path = [tmp_home 'data\'];
 sim_method = 'GN';
 a = 15e-2;
 % fréquence de travail [Hz]
-f = 1000;
+f = 100;
 % Maximum order (Bessel, Hankel, SH)
-Nmax = 5;
+Nmax = 6;
 
 %%% Autres paramètres
 % débit de la source [m^3/s]
@@ -23,12 +23,9 @@ rho = 1;
 c = 340;
 
 % position source
-xs = 0;
-ys = 0;
+xs = 1;
+ys = 2;
 zs = 0.5;
-
-
-
 
 %% chargement des positions des micros
 Nmic = 36;

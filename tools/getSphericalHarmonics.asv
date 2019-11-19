@@ -1,4 +1,5 @@
 function [Y] = getSphericalHarmonics(theta,phi,n,m,pp)  
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % [Y] = getSphericalHarmonics(theta,phi,n,m,pp)  
 % 
@@ -22,10 +23,11 @@ function [Y] = getSphericalHarmonics(theta,phi,n,m,pp)
 %   norm : normalisation de l'harmonique sphérique
 %   doplot : plot the associated legendre function (elevation function)
 %
-% Output :
+% output :
 %   * Y   = Matrix cotaining spherical harmonic for each angle. It is the
-%   same size as theta and phi. For instance, the value Y(i,j) is
-%   associated to the angles theta(i,j) and phi(i,j) on the grid.
+%   same size as theta and phi. For instance, 
+
+
 %
 % see also legendre 
 %
@@ -97,7 +99,7 @@ Y = reshape(Y,sz);
 
 % plot the current associated legendre function
 if pp.doplot
-    figure('Name',sprintf('Associated Legendre function : degree %d ; order %d',n,m));
+    hh = figure('Name',sprintf('Associated Legendre function : degree %d ; order %d',n,m));
     plot(theta(1:sz(1)),Pmn(1:sz(1)),'k','linewidth',2)
     xlabel('Elevation angle $\theta$','interpreter','latex')
     title(sprintf('Associated Legendre function $P_{%d}^{%d}$',n,m),'interpreter','latex')
