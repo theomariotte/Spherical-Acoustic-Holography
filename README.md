@@ -12,7 +12,7 @@
 
 # Dossiers contenus dans le projet : 
 
-# (*) _tests : codes de test diverses
+# (*) _tests : codes de test divers
 
 # (*) data : données utiles
 
