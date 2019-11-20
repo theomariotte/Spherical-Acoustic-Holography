@@ -1,11 +1,11 @@
 % test simulation mesures
 clear; clc;
-% close all;
+close all;
 
 %% Paramètres
 
 % type de calcul : (1) antenne analytique ; (2) vraies positions
-typ = 1;
+typ = 2;
 data_path = 'data/';
 % Tracé de la pression acoustique
 % plt_typ : ('real') real part ; ('dB') decibels ; ('abs') absolute value
@@ -16,7 +16,7 @@ plt_typ = 'abs';
 % uniquement sur la frontière) ; 
 % ('Propagator') Utilise le propagateur
 % défini par Williams dans 'Intensity vector reconstruction'. 
-sim_method = 'Propagator';
+sim_method = 'GN';
 
 % Microphone array radius
 a = 15e-2;
@@ -25,7 +25,7 @@ r_cmp = a;
 % fréquence de travail [Hz]
 f = 100;
 % Maximum order (Bessel, Hankel, SH)
-Nmax = 6;
+Nmax = 5;
 
 %%% Autres paramètres
 % débit de la source [m^3/s]
@@ -49,7 +49,7 @@ if typ == 1
     
     % grid in azimuth and elevation
     dx = pi/20;
-    az = (-pi : 2*dx : pi)';
+    az = (0 : 2*dx : 2*pi)';
     elev = (-pi/2 : dx : pi/2)';   
     [az_grid,elev_grid] = meshgrid(az,elev);
     

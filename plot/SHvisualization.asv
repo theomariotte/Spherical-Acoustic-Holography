@@ -78,15 +78,8 @@ switch pp.pltype
     case '3Dplot'
         
         % cartesian frame
-        % Theta should belong to [-pi/2 ; pi/2] for the conversion in
-        % cartesian coordinates to be OK.         
-        if min(min(theta)) >= 0
-            theta_viz = theta - pi/2;
-        else
-            theta_viz = theta;
-        end
-        
-        [Xsh,Ysh,Zsh] = sph2cart(phi,theta_viz,Y2plot);
+        theta = theta - pi/2;
+        [Xsh,Ysh,Zsh] = sph2cart(phi,theta,Y2plot);
         
         surf(Xsh,Ysh,Zsh,Y2plot)
         shading('interp')
