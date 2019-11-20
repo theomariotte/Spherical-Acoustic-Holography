@@ -77,7 +77,7 @@ for n = 0 : pp_simu.MaxOrder
     
     switch pp_simu.method
         case 'GN'
-             p_tmp = hn_r0/dhn_a * SH_sum;
+             p_tmp = p_tmp + (hn_r0/dhn_a) * SH_sum;
              gain = (-1i*rho*c*Q)/(a^2);
              
         case 'Propagator'

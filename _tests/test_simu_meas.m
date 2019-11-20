@@ -1,26 +1,12 @@
 % test simulation mesures
 clear; clc;
-close all;
-
-%% initialisation
-
-% matlabhome = 'H:\Mes documents\5A\Projet_5A\19_10_spherical_NAH\';
-matlabhome = 'D:\Users\e152210\19_10_spherical_NAH\';
-simu_path = [matlabhome 'simulation\'];
-plot_path = [matlabhome 'plot\'];
-sph_func_path = [matlabhome 'spherical_functions\'];
-data_path = [matlabhome 'data\'];
-
-addpath(plot_path);
-addpath(sph_func_path);
-addpath(simu_path);
-addpath(data_path);
+% close all;
 
 %% Paramètres
 
 % type de calcul : (1) antenne analytique ; (2) vraies positions
 typ = 1;
-
+data_path = 'data/';
 % Tracé de la pression acoustique
 % plt_typ : ('real') real part ; ('dB') decibels ; ('abs') absolute value
 plt_typ = 'abs';
@@ -30,14 +16,14 @@ plt_typ = 'abs';
 % uniquement sur la frontière) ; 
 % ('Propagator') Utilise le propagateur
 % défini par Williams dans 'Intensity vector reconstruction'. 
-sim_method = 'Brute';
+sim_method = 'Propagator';
 
 % Microphone array radius
 a = 15e-2;
 % radius of the sphere where the simulation is computed
 r_cmp = a;
 % fréquence de travail [Hz]
-f = 1000;
+f = 100;
 % Maximum order (Bessel, Hankel, SH)
 Nmax = 6;
 
@@ -52,8 +38,8 @@ c = 340;
 %% Source location
 
 % cartesian coordinates [m]
-xs = 0;
-ys = 0;
+xs = 0.5;
+ys = 0.5;
 zs = 0.5;
 
 Rs = [xs ys zs];
@@ -62,19 +48,20 @@ Rs = [xs ys zs];
 if typ == 1
     
     % grid in azimuth and elevation
-    dx = pi/40;
-    az_q = (0 : 2*dx : 2*pi)';
-    elev_ = (-pi/2 : dx : pi/2)';   
-    [az_q,elev_] = meshgrid(az_q,elev_);
+    dx = pi/20;
+    az = (-pi : 2*dx : pi)';
+    elev = (-pi/2 : dx : pi/2)';   
+    [az_grid,elev_grid] = meshgrid(az,elev);
+    
     % constant radius
-    r_ = r_cmp * ones(size(elev_));
+    r_grid = r_cmp * ones(size(elev_grid));
     
     % grid in catesian frame
-    [x_,y_,z_] = sph2cart(az_q,elev_,r_);
-    sz_ = size(x_);
+    [x_grid,y_grid,z_grid] = sph2cart(az_grid,elev_grid,r_grid);
+    sz_grid = size(x_grid);
     
     % microphone's locations
-    Rm = [x_(:) y_(:) z_(:)];   
+    Rm = [x_grid(:) y_grid(:) z_grid(:)];   
     
     % Interpolation ?
     dointerp = 0;
@@ -119,21 +106,21 @@ if dointerp
     % grille sur laquelle interpoler
     nTheta0 = 50; 
     nPhi0 = nTheta0;
-    az_q = linspace(0, 2*pi, nPhi0);
+    az_grid = linspace(0, 2*pi, nPhi0);
     elev_q   = linspace(-pi/2, pi/2, nTheta0);
-    [az_q, elev_q] = meshgrid(az_q, elev_q);
+    [az_grid, elev_q] = meshgrid(az_grid, elev_q);
     
     % rayon de la sphère de calcul
     radius = r_cmp*ones(nTheta0, nPhi0);
     
     % grille d'interpolation en cartésien
-    [x_,y_,z_] = sph2cart(az_q, elev_q, radius);
+    [x_grid,y_grid,z_grid] = sph2cart(az_grid, elev_q, radius);
     
     % Pression interpolée sur la nouvelle grille
-    P_interp = F(x_,y_,z_);
+    P_interp = F(x_grid,y_grid,z_grid);
                   
 else    
-    P_interp = reshape(P,sz_);
+    P_interp = reshape(P,sz_grid);
 end
 %% choose plot
 if  strcmp(plt_typ,'real') == 1
@@ -157,7 +144,7 @@ h = figure('Name','Pressure field on the sphere');
 
 hold on
 if r_cmp > a
-    s1 = surf(x_,y_,z_,P2plot);
+    s1 = surf(x_grid,y_grid,z_grid,P2plot);
     colormap('jet')
     if exist('clim','var')    
         set(gca,'clim',clim);
@@ -173,7 +160,7 @@ if r_cmp > a
     s1 = surf(x_plt,y_plt,z_plt,ones(size(z_plt)));
     set(s1,'facecolor',[0 0 0]);       
 else
-    surf(x_,y_,z_,P2plot)    
+    surf(x_grid,y_grid,z_grid,P2plot)    
     colormap('jet')
     if exist('clim','var')    
         set(gca,'clim',clim);

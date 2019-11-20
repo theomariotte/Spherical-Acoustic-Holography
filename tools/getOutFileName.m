@@ -9,14 +9,16 @@ if ext(1) ~= '.'
    ext = ['.' ext]; 
 end
 
+
 fID = 1;
-fname = [fname sprintf('_%02d',fID)];
+fname2save = [fname sprintf('_%02d',fID)];
 
 while(exist([Path fname ext],'file'))
     fID = fID + 1;
-    fname = [fname sprintf('_%02d',fID)];
+    fname2save = [fname sprintf('_%02d',fID)];
 end
 
-out_file_name =[Path fname ext];
+
+out_file_name =[Path fname2save ext];
 
 end

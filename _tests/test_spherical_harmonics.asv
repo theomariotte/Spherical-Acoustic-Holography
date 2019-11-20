@@ -45,8 +45,8 @@ az = 0 : dx*2 : 2*pi;
 [phi,theta] = meshgrid(az,elev);
 
 % Legendre associated function's degree 
-n = 3;
-m = 3;
+n = 2;
+m = 2;
 
 % valeur de l'harmonique sphérique pour cette vvaleur d'angle
 pp = struct('norm',1,...
@@ -78,14 +78,6 @@ P = 2;
 pp = struct(...
             'pltype',typ,...
             'valtype','imag',...
-            'orders',[n m],...
-            'fontsize',12);
-
-h_SH = SHvisualization(pp,theta,phi,Y);
-
-pp = struct(...
-            'pltype',typ,...
-            'valtype','real',...
             'orders',[n m],...
             'fontsize',12);
 
@@ -135,17 +127,8 @@ end
 if docomp
     
     h_th = SHvisualization(pp,theta,phi,conj(Y_th));
-    title(sprintf('Theoretical spherical harmonic : (%s) $Y_%d^%d$',pp.valtype,n,m),'interpreter','latex')
+    title(sprintf('Theoretical spherical harmonic $Y_2^2$','interpreter','latex')
    
-    pp = struct(...
-            'pltype',typ,...
-            'valtype','imag',...
-            'orders',[n m],...
-            'fontsize',12);
-
-    h_SH = SHvisualization(pp,theta,phi,conj(Y_th));
-    title(sprintf('Theoretical spherical harmonic : (%s) $Y_%d^%d$',pp.valtype,n,m),'interpreter','latex')
-    
 if doprint
     fname = sprintf('SH_th_n_%02d_m_%02d',n,m);
     

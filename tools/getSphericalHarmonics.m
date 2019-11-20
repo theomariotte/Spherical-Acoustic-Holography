@@ -1,4 +1,4 @@
-function [Y] = getSphericalHarmonics(theta,phi,n,m,pp)  
+function [Y,h_legendre] = getSphericalHarmonics(theta,phi,n,m,pp)  
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % [Y] = getSphericalHarmonics(theta,phi,n,m,pp)  
 % 
@@ -24,9 +24,8 @@ function [Y] = getSphericalHarmonics(theta,phi,n,m,pp)
 %
 % output :
 %   * Y   = Matrix cotaining spherical harmonic for each angle. It is the
-%   same size as theta and phi. For instance, 
-
-
+%   same size as theta and phi. 
+%   * h_legendre = figure handle for Legendre associated function plot
 %
 % see also legendre 
 %
@@ -53,6 +52,7 @@ if nargin < 2, error('Both elevation - azimuthal angles grid should be defined.'
 if size(theta) ~= size(phi), error('Theta and Phi grids should be the same size'); end
 if abs(m) > n, error('the order condition |m| <= n should be verified.');end
    
+
 % check if m is negative and odd
 isneg = m < 0;
 isodd = mod(m,2) == 1;
@@ -82,7 +82,7 @@ else
 end
 
 % current spherical harmonic (complex)
-Y = C * Pmn .* exp(-1j*m*phi);
+Y = C * Pmn .* exp(1j*m*phi);
 
 % in case of negative m, the spherical harmonic can be computed from the
 % one at the same m but positive (see Williams Eq (6.44) pp 191)
@@ -98,11 +98,14 @@ Y = reshape(Y,sz);
 
 % plot the current associated legendre function
 if pp.doplot
-    hh = figure('Name',sprintf('Associated Legendre function : degree %d ; order %d',n,m));
+    h_legendre = figure('Name',sprintf('Associated Legendre function : degree %d ; order %d',n,m));
     plot(theta(1:sz(1)),Pmn(1:sz(1)),'k','linewidth',2)
     xlabel('Elevation angle $\theta$','interpreter','latex')
     title(sprintf('Associated Legendre function $P_{%d}^{%d}$',n,m),'interpreter','latex')
     grid on
+    set(gca,'xlim',[0 pi]);
+else
+    h_legendre = [];
 end
 
 
