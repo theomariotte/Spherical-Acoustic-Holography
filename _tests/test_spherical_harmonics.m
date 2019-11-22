@@ -68,7 +68,7 @@ pp = struct(...
             'fontsize',12);
 
 h_SH = SHvisualization(pp,theta,phi,Y);
-colorbar;
+
 
 pp = struct(...
             'pltype',typ,...
@@ -77,7 +77,7 @@ pp = struct(...
             'fontsize',12);
 
 h_SH = SHvisualization(pp,theta,phi,Y);
-colorbar;
+
 
 if doprint
     fname = sprintf('SH_n_%02d_m_%02d',n,m);
@@ -117,7 +117,7 @@ if docomp
         'fontsize',12);
     h_th = SHvisualization(pp,theta,phi,Y_th);
     title(sprintf('Theoretical spherical harmonic : (%s) $Y_%d^%d$',pp.valtype,n,m),'interpreter','latex')
-    colorbar;
+    
     
     pp = struct(...
             'pltype',typ,...
@@ -133,5 +133,5 @@ if doprint
     flag = printFigFmt(h_th,impath,fname,ext);    
 end
    
-colorbar;
+
 end

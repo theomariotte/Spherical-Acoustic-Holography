@@ -5,7 +5,7 @@ close all;
 %% Paramètres
 
 % type de calcul : (1) antenne analytique ; (2) vraies positions
-typ = 2;
+typ = 1;
 data_path = 'data/';
 % Tracé de la pression acoustique
 % plt_typ : ('real') real part ; ('dB') decibels ; ('abs') absolute value
@@ -16,7 +16,7 @@ plt_typ = 'abs';
 % uniquement sur la frontière) ; 
 % ('Propagator') Utilise le propagateur
 % défini par Williams dans 'Intensity vector reconstruction'. 
-sim_method = 'GN';
+sim_method = 'Propagator';
 
 % Microphone array radius
 a = 15e-2;
@@ -124,7 +124,7 @@ else
 end
 %% choose plot
 if  strcmp(plt_typ,'real') == 1
-    P2plot = real(P_interp);
+    P2plot = real(P_interp,2);
     min_p = min(min(P_interp));
     max_p = max(max(P_interp));
     abs_lim = max(abs([min_p max_p]));

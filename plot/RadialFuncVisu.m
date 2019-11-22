@@ -1,5 +1,4 @@
-9function RadialFuncVisu(hn,r,pp)
-
+function h1 = RadialFuncVisu(hn,r,pp)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % RadialFuncVisu(hn,diff_hn,r,pp)
 %

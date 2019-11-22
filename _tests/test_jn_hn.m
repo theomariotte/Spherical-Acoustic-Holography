@@ -24,7 +24,7 @@ dr = .01;
 r_in = 0 : dr : 20;
 % r_in = 2;
 % max function order
-n = 5;
+n = 4;
 
 % Spherical Bessel function
 [hn,dhn,r] = SphericalHankel1(n,r_in);
