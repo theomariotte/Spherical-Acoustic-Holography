@@ -15,7 +15,8 @@ close all;
 
 % définition
 global matlab_home;
-matlab_home = 'H:\Mes documents\5A\Projet_5A\_GIT\Spherical-Acoustic-Holography\';
+% matlab_home = 'H:\Mes documents\5A\Projet_5A\_GIT\Spherical-Acoustic-Holography\';
+matlab_home = 'C:\Users\Théo\Documents\1_WORK\01_ENSIM\5A\Projet 5A\Spherical-Aoustic-Holography\';
 
 if ~exist(matlab_home,'dir')
    error('Initialization failed : MATLAB HOME does not exit'); 
