@@ -16,7 +16,7 @@ plt_typ = 'abs';
 % uniquement sur la frontière) ; 
 % ('Propagator') Utilise le propagateur
 % défini par Williams dans 'Intensity vector reconstruction'. 
-sim_method = 'Propagator';
+sim_method = 'GN';
 
 % Microphone array radius
 a = 15e-2;
@@ -38,8 +38,8 @@ c = 340;
 %% Source location
 
 % cartesian coordinates [m]
-xs = 0.5;
-ys = 0.5;
+xs = 0.;
+ys = 0.;
 zs = 0.5;
 
 Rs = [xs ys zs];
@@ -50,7 +50,7 @@ if typ == 1
     % grid in azimuth and elevation
     dx = pi/20;
     az = (0 : 2*dx : 2*pi)';
-    elev = (-pi/2 : dx : pi/2)';   
+    elev = (0 : dx : pi)';   
     [az_grid,elev_grid] = meshgrid(az,elev);
     
     % constant radius

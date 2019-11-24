@@ -17,7 +17,7 @@ function [Y,h_legendre] = getSphericalHarmonics(theta,phi,n,m,pp)
 %   n]. 
 %   * pp    = structure containing different parameters which are defined 
 %   below :
-%                   pp = struct('norm',1,'doplot',1);
+%                   pp = struct('norm',1,'doplot',0);
 %
 %   norm : normalisation de l'harmonique sph?rique
 %   doplot : plot the associated legendre function (elevation function)
