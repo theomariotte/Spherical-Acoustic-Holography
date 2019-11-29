@@ -26,8 +26,10 @@ num_mic = size(Rm,1);
 P_crnt = zeros(num_mic,1);
 P = P_crnt;
 
-figure('name','verif points')
-hold on
+if pp_simu.doplot
+    figure('name','verif points')
+    hold on
+end
 
 for isrc = 1 : num_source
             

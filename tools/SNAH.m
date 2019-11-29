@@ -44,13 +44,13 @@ end
 %%% Define some parameters
 
 % Number of microphone on the sphere
-M = size(theta,1);
+M = size(theta_m,1);
 % reconstruction radius
 R = pp_reconstruction.R;
 % radius of the sphere
 a = pp_reconstruction.a;
 % wave number
-k = 2*pi*pp.reconstruction.freq / pp_reconstruction.c;
+k = 2*pi*pp_reconstruction.freq / pp_reconstruction.c;
 
 % parameters for the Fourier coefficients computation. A pseudo inversion
 % is used in the function
@@ -59,16 +59,22 @@ pp_fourier = struct('regularization',0,...
             'compute_condition',0);
 
 % Get the spherical harmonics matrix Ymat (WIP)
+idx_ = 1;
 for n = 1 : pp_reconstruction.maxOrder
    for m =  -n : n
-       Ynm = getSphericalHarmonics(theta,phi,n,m);
-       % Ymat has to be organized as follow
-       %
+       Ynm = getSphericalHarmonics(theta_m,phi_m,n,m);
+       
+       % Ymat is organized as follow       
        % Ymat = [[Y00(t1,p1) Y-11(t1,p1) ... YNN(t1,p1)] ;... 
        %         [Y00(t2,p2) Y-11(t2,p2) ... YNN(t2,p2) ;...
        %             :         :              :
        %             :         :              :
        %         [Y00(tM,pM) Y-11(tM,pM) ... YNN(tM,pM)]
+       
+       Ymat(:,idx_) = Ynm(:);
+       
+       idx_ = idx_ + 1;
+       
    end
 end
 
@@ -83,34 +89,64 @@ Pmn = solveIllPosedProblem(Ymat,P_meas,pp_fourier);
 % Fourier coef index
 idx_ = 1;
 % reconstructed pressure on the sphere of radius R
-P_reconstruct = zeros(size(theta));
+P_reconstruct = zeros(size(theta_m));
 
-for n = 1 : pp_reconstruction.maxOrder
-    % Propagator 
-    [jn_r,~,~,~,~] = SphericalBessel(n,k*R);
-    [hn_r,~,~] = SphericalHankel1(n,k*R);
-    [~,djn_a,~,~,~] = SphericalBessel(n,k*a);
-    [~,dhn_a,~] = SphericalHankel1(n,k*a);
-    Gn = jn_r*dhn_a - djn_a*hn_r;
+if ~pp_reconstruction.incidentOnly 
+   for n = 1 : pp_reconstruction.maxOrder
+        % Propagator 
+        [jn_r,~,~,~,~] = SphericalBessel(n,k*R);
+        [hn_r,~,~] = SphericalHankel1(n,k*R);
+        [~,djn_a,~,~,~] = SphericalBessel(n,k*a);
+        [~,dhn_a,~] = SphericalHankel1(n,k*a);
+        Gn = jn_r*dhn_a - djn_a*hn_r;
+
+        % init the sum over n
+        S_tmp = zeros(size(theta_m));    
+        for m =  -n : n
+            % spherical harmonics at the current n & m for each microphone
+            % location
+            Ynm = getSphericalHarmonics(theta_m,phi_m,n,m);
+
+            % update the sum
+            S_tmp = S_tmp .*( Ymn * Pmn(idx_) );
+
+            % upate Fourier coef index
+            idx_ = idx_+1;
+
+        end
+
+        P_reconstruct = P_reconstruct + ( Gn * S_tmp );
+    
+    end 
+else
+    for n = 1 : pp_reconstruction.maxOrder
         
-    % init the sum over n
-    S_tmp = zeros(size(theta));    
-    for m =  -n : n
-        % spherical harmonics at the current n & m for each microphone
-        % location
-        Ynm = getSphericalHarmonics(theta,phi,n,m);
-        
-        % update the sum
-        S_tmp = S_tmp .*( Ymn * Pmn(idx_) );
-        
-        % upate Fourier coef index
-        idx_ = idx_+1;
-        
+        % Propagator 
+        [jn_r,~,~,~,~] = SphericalBessel(n,k*R);
+        [~,dhn_a,~] = SphericalHankel1(n,k*a);
+        Gn = jn_r*dhn_a;
+
+        % init the sum over n
+        S_tmp = zeros(size(theta_m));    
+        for m =  -n : n
+            % spherical harmonics at the current n & m for each microphone
+            % location
+            Ynm = getSphericalHarmonics(theta_m,phi_m,n,m);
+
+            % update the sum
+            S_tmp = S_tmp .*( Ymn * Pmn(idx_) );
+
+            % upate Fourier coef index
+            idx_ = idx_+1;
+
+        end
+
+        P_reconstruct = P_reconstruct + ( Gn * S_tmp );
+
     end
-    
-    P_reconstruct = P_reconstruct + ( Gn * S_tmp );
-    
 end
+
+
 
 P_reconstruct = -1i * (k*a)^2 * P_reconstruct;
 

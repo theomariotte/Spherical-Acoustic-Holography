@@ -85,10 +85,10 @@ for n = 0 : pp_simu.MaxOrder
             Gn = (k*a)^2 * (jn_r * dyn_a - djn_a * yn_r);
 
             % sound pressure at the degree n
-            p_tmp = p_tmp + Gn * ( hn_r0/( (k*a)^2 * dhn_a ) ) * SH_sum;
+            p_tmp = p_tmp + Gn * ( hn_r0/dhn_a) * SH_sum;
             
             % gain that multiply the sound pressure
-            gain = -4*pi;
+            gain = -4*pi / ((k*a)^2);
             
         case 'Brute'
             [hn_r,~,~] = SphericalHankel1(n,k*r_mic);

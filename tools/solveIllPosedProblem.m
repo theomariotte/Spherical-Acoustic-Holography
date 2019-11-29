@@ -11,7 +11,7 @@ function [q,varargout] = solveIllPosedProblem(X,s,pp)
 % Variables :
 % The unknown vector q is composed of L elements.
 % The data vector s is composed of M elements.
-% The matrix X is composed of [LxM] elements. 
+% The matrix X is composed of [MxL] elements. 
 %
 % If the problem is well-posed (M=L), the function is using a classical
 % linear system solver.
@@ -45,7 +45,6 @@ if nargin < 2
     error('One matrix and one vector should be defined to solve the problem !')
 end
 
-
 nout = nargout - 1;
 if nout > 0, pp.compute_condition = 1; end
 
@@ -60,18 +59,18 @@ end
 
 if tst > 1,error('Data vector s must be 1-D array');end
 
-[M_tst,L] = size(X);
+[nMic,maxOrder] = size(X);
 
-if M_tst > L
+if nMic > maxOrder
     X = X';
-    [M_tst,L] = size(X);
+    [nMic,maxOrder] = size(X);
 end
 
 % check the size of the matrix compared to the data vector
-if M_tst ~= M, error('Ymn : number of lines should be the same as p_vec'); end
+if nMic ~= M, error('Ymn : number of lines should be the same as p_vec'); end
 
 % If M==L -> linear system
-if M == L
+if M == 0
     q = linsolve(X,s);
 
 % Else -> ill posed problem    
@@ -85,9 +84,9 @@ else
         X = X_prod + alpha * I;
 
         if pp.compute_condition
-            [~,Singular,~] = svd(X);
-            max_S = max(max(Singular));
-            min_S = min(min(Singular));
+            [~,Sigma,~] = svd(X);
+            max_S = max(max(Sigma));
+            min_S = min(min(Sigma));
             condition = max_S/min_S;
             varargout{1} = condition;
         end
@@ -97,17 +96,18 @@ else
         X_inv = (conj(X))' * Ymn_reg_inv ;
 
     else
-
-        if pp.compute_condition
-            [~,Singular,~] = svd(X);
-            max_S = max(max(Singular));
-            min_S = min(min(Singular));
+        [U,Sigma,Vh] = svd(X);
+        % inversion Xinv = U^h * inv(Sigma) * V
+        Sigma_inv = pinv(Sigma);
+        X_inv = Vh' * Sigma_inv * U';
+        
+        if pp.compute_condition            
+            max_S = max(max(diag(Sigma)));
+            min_S = min(min(diag(Sigma)));                              
             condition = max_S/min_S;
             varargout{1} = condition;
         end
-
-        X_inv = pinv(X);    
-
+       
     end
 
     q = X_inv * s;    

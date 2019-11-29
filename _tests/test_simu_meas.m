@@ -5,7 +5,7 @@ close all;
 %% Paramètres
 
 % type de calcul : (1) antenne analytique ; (2) vraies positions
-typ = 1;
+typ = 2;
 data_path = 'data/';
 % Tracé de la pression acoustique
 % plt_typ : ('real') real part ; ('dB') decibels ; ('abs') absolute value
@@ -50,7 +50,7 @@ if typ == 1
     % grid in azimuth and elevation
     dx = pi/20;
     az = (0 : 2*dx : 2*pi)';
-    elev = (0 : dx : pi)';   
+    elev = (-pi/2 : dx : pi/2)';   
     [az_grid,elev_grid] = meshgrid(az,elev);
     
     % constant radius
@@ -75,7 +75,7 @@ elseif typ == 2
     fclose(fID);
 
     Rm = transpose(reshape(mic_loc_tmp,[3 Nmic]));  
-    dointerp = 1;
+    dointerp = 0;
 end
 
 

@@ -60,10 +60,6 @@ isodd = mod(m,2) == 1;
 % check \theta values (elevation)
 % should belong to [0 pi] to get the good Legendre function
 
-if min(min(theta)) <= -pi/2
-    theta = theta + pi/2;
-end
-
 if max(max(theta)) > pi
    error('Elevation angle should belong to [0 pi]') 
 end
