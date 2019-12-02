@@ -61,23 +61,29 @@ function [P_interp,x_grid,y_grid,z_grid] = fieldInterpolation(P,mic_pos,param)
 %         legend('Interpolation grid','Transducers');
         
         % Compare initial sound pressuer with the interpolated one
-        [~,phi_init,theta_init] = sphericalCoordinates(x,y,z);
-        elev_q = elev_q + pi/2;
-        
+        [~,phi_init,theta_init] = sphericalCoordinates(x,y,z);        
+        [~,az_q,elev_q] = sphericalCoordinates(x_grid,y_grid,z_grid);        
         figure('Name','Sound FieldInterpolation');
         hold on
-        surf(az_q,elev_q,abs(P_interp))
+        surf(az_q,fliplr(elev_q),abs(P_interp))
+        c = colorbar;
+        c.Label.String = 'Interp. sound pressure (abs) [Pa]';
         shading('Interp')
         plot3(phi_init,...
               theta_init,...
               abs(P),...
-              'ro',...
+              'k.',...
               'linewidth',4);
-        xlabel('Azimuth \phi')
-        ylabel('Elevation \theta')
-        zlabel('Sound pressure |p(a,\theta,\phi)|')
-        axis equal
+          
+          % axis labels
+        xlabel('Azimuth $\phi$','interpreter','latex')
+        ylabel('Elevation $\theta$','interpreter','latex')
+        zlabel('Sound pressure $|p(a,\theta,\phi)|$','interpreter','latex')
+                       
         grid on
+        legend('Interpolated','Measurement');
+        set(gca,'fontsize',12);
+        view(80,50);
     end
   
 end

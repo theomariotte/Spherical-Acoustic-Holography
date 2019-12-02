@@ -4,6 +4,9 @@ Fonctions utiles à la génération d'une simulation.
 
 Contenus du dossier :
 
+buildSimuSphere.m : fonction permettant de gérérer les coordonnées des points sur une sphère
+(= antenne de microphones virtuelle)
+
 generateSimu.m : fonction générant une simulation pour un monopôle rayonnant sur une sphère. 
 Elle retourne un vecteur des pressions en chaque point de mesure disposés sur la sphère.
 

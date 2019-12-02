@@ -4,8 +4,6 @@ close all;
 
 %% Paramètres
 
-% type de calcul : (1) antenne analytique ; (2) vraies positions
-typ = 2;
 data_path = 'data/';
 % Tracé de la pression acoustique
 % plt_typ : ('real') real part ; ('dB') decibels ; ('abs') absolute value
@@ -20,161 +18,66 @@ sim_method = 'GN';
 
 % Microphone array radius
 a = 15e-2;
-% radius of the sphere where the simulation is computed
-r_cmp = a;
 % fréquence de travail [Hz]
-f = 100;
+f = 500;
 % Maximum order (Bessel, Hankel, SH)
-Nmax = 5;
+Nmax = 6;
 
 %%% Autres paramètres
 % débit de la source [m^3/s]
 Q = 1e-3;
 % masse volumique du milieu
-rho = 1;
+rho = 1.2;
 % célérité du milieu 
 c = 340;
 
 %% Source location
 
 % cartesian coordinates [m]
-xs = 0.;
-ys = 0.;
-zs = 0.5;
+xs = [ .3 ; 0 ; -.6];
+ys = [ .3 ; .5 ; 0];
+zs = [ .3 ; -.3 ; -.3];
 
 Rs = [xs ys zs];
 
 %% Load microphone locations
-if typ == 1
-    
-    % grid in azimuth and elevation
-    dx = pi/20;
-    az = (0 : 2*dx : 2*pi)';
-    elev = (-pi/2 : dx : pi/2)';   
-    [az_grid,elev_grid] = meshgrid(az,elev);
-    
-    % constant radius
-    r_grid = r_cmp * ones(size(elev_grid));
-    
-    % grid in catesian frame
-    [x_grid,y_grid,z_grid] = sph2cart(az_grid,elev_grid,r_grid);
-    sz_grid = size(x_grid);
-    
-    % microphone's locations
-    Rm = [x_grid(:) y_grid(:) z_grid(:)];   
-    
-    % Interpolation ?
-    dointerp = 0;
-    
-elseif typ == 2
-    Nmic = 36;
-    filename =  '3Dcam36Officiel.txt';
-    fID = fopen([data_path filename],'r');
-    sizeA = [Nmic 3];
-    mic_loc_tmp = fscanf(fID,'%f');
-    fclose(fID);
+Nmic = 36;
+filename =  '3Dcam36Officiel.txt';
+fID = fopen([data_path filename],'r');
+sizeA = [Nmic 3];
+mic_loc_tmp = fscanf(fID,'%f');
+fclose(fID);
 
-    Rm = transpose(reshape(mic_loc_tmp,[3 Nmic]));  
-    dointerp = 0;
-end
-
+Rm = transpose(reshape(mic_loc_tmp,[3 Nmic]));  
 
 %% calculate the soundfield at each microphone
 
 pp_simu = struct('MaxOrder',Nmax,...
-               'freq',f,...
-               'SphereRadius',a,...
-               'c',c,...
-               'rho',rho,...
-               'Q',Q,...
-               'method',sim_method,...
-               'doplot',0);
+                'freq',f,...
+                'SphereRadius',a,...
+                'c',c,...
+                'rho',rho,...
+                'Q',Q,...
+                'method',sim_method,...
+                'doplot',0);
+
             
 [P] = generateSimu(Rm,Rs,pp_simu);        
 
-%% Pressure interpolation to plot on a sphere
-if dointerp
-    
-    % microphone's locations in spherical coordinates        
-    x = Rm(:,1);
-    y = Rm(:,2);
-    z = Rm(:,3);
-    
-    % interpolation
-    F = scatteredInterpolant(x,y,z,P,'natural');
-
-    % grille sur laquelle interpoler
-    nTheta0 = 50; 
-    nPhi0 = nTheta0;
-    az_grid = linspace(0, 2*pi, nPhi0);
-    elev_q   = linspace(-pi/2, pi/2, nTheta0);
-    [az_grid, elev_q] = meshgrid(az_grid, elev_q);
-    
-    % rayon de la sphère de calcul
-    radius = r_cmp*ones(nTheta0, nPhi0);
-    
-    % grille d'interpolation en cartésien
-    [x_grid,y_grid,z_grid] = sph2cart(az_grid, elev_q, radius);
-    
-    % Pression interpolée sur la nouvelle grille
-    P_interp = F(x_grid,y_grid,z_grid);
-                  
-else    
-    P_interp = reshape(P,sz_grid);
-end
-%% choose plot
-if  strcmp(plt_typ,'real') == 1
-    P2plot = real(P_interp,2);
-    min_p = min(min(P_interp));
-    max_p = max(max(P_interp));
-    abs_lim = max(abs([min_p max_p]));
-    clim = [-abs_lim abs_lim];
-elseif strcmp(plt_typ,'dB') == 1
-    pref = 20e-6;
-    P2plot = 20*log10(abs(P_interp)/pref);
-    clim = [40 110];
-elseif strcmp(plt_typ,'abs') == 1
-    P2plot = abs(P_interp);        
-end
-
-%% Figures
-
-% pressure field with theoretical sphere
-h = figure('Name','Pressure field on the sphere');
-
-hold on
-if r_cmp > a
-    s1 = surf(x_grid,y_grid,z_grid,P2plot);
-    colormap('jet')
-    if exist('clim','var')    
-        set(gca,'clim',clim);
-    end
-    shading('interp')
-    colorbar
-    set(s1,'FaceAlpha',0.5)
-    
-    [xplt,yplt,zplt] = sphere(30);         
-    [az_plt,elev_plt,r_plt] = cart2sph(xplt,yplt,zplt);
-    r_plt = a*r_plt;
-    [x_plt,y_plt,z_plt] = sph2cart(az_plt,elev_plt,r_plt);
-    s1 = surf(x_plt,y_plt,z_plt,ones(size(z_plt)));
-    set(s1,'facecolor',[0 0 0]);       
-else
-    surf(x_grid,y_grid,z_grid,P2plot)    
-    colormap('jet')
-    if exist('clim','var')    
-        set(gca,'clim',clim);
-    end
-    shading('interp')
-    colorbar
-end
-
-plot3(Rs(:,1),Rs(:,2),Rs(:,3),'ro','linewidth',3)
-hold off
-xlabel('X','interpreter','latex')
-ylabel('Y','interpreter','latex')
-zlabel('Z','interpreter','latex')
-axis('equal')
+%% Affichage 
+pp_interp = struct('sphereRadius',a,...
+            'numAngle',30,...
+            'interpType','natural',...
+            'doplot',1);
+        
+pp_plot = struct('showSource',0,...
+                'showMic',0,...
+                'plt_typ',plt_typ,...
+                'clim',[],...
+                'fontSize',12,...
+                'freq',f);     
+            
+handle = pressureMeasurementVisu(P,Rm,Rs,pp_interp,pp_plot);
 
 
 % Pressure field on a sphere with data interpolation (does not work yet)

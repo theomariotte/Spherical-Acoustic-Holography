@@ -1,4 +1,4 @@
-function [P] = generateSimu(Rm,Rs,pp_simu)
+function [P_tot] = generateSimu(Rm,Rs,pp_simu)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function simulating the pressure measured by an array of microphones. 
 % Locations of microphones can be loaded from a text file (original
@@ -24,50 +24,33 @@ num_source = size(Rs,1);
 num_mic = size(Rm,1);
 
 P_crnt = zeros(num_mic,1);
-P = P_crnt;
+P_tot = P_crnt;
 
-if pp_simu.doplot
-    figure('name','verif points')
-    hold on
-end
+x = Rm(:,1); y = Rm(:,2); z = Rm(:,3);
+xs = Rs(:,1); ys = Rs(:,2); zs = Rs(:,3);
+
+[rho_mic,phi_mic,theta_mic] = sphericalCoordinates(x,y,z);
+[rho_src,phi_src,theta_src] = sphericalCoordinates(xs,ys,zs);
 
 for isrc = 1 : num_source
-            
-    [phi_s,theta_s,r_s] = cart2sph(Rs(isrc,1),Rs(isrc,2),Rs(isrc,3));
-    r0 = [r_s theta_s phi_s];
     
-    if pp_simu.doplot
-        [xs_plt,ys_plt,zs_plt] = sph2cart(phi_s,theta_s,r_s);    
-        plot3(xs_plt,ys_plt,zs_plt,'gx')
-        plot3(Rs(isrc,1),Rs(isrc,2),Rs(isrc,3),'ro','linewidth',3)
-        axis equal
-        set(gca,'xlim',[-0.2 0.2],'ylim',[-0.2 0.2],'zlim',[-0.2 0.2])
-        xlabel('X')
-        ylabel('Y')
-        zlabel('Z')
-        title('Vérification points de chaque mesure')
-    end
+    % source location ins spherical coordinates
+    r0 = [rho_src(isrc) theta_src(isrc) phi_src(isrc)];
     
     for imic = 1 : num_mic
-        
-        [phi_m,theta_m,r_m] = cart2sph(Rm(imic,1),Rm(imic,2),Rm(imic,3));
-        r = [r_m theta_m phi_m];
+                
+        % microphone locations in spherical coordinates
+        r = [rho_mic(imic) theta_mic(imic) phi_mic(imic)];
         
         % Sound pressure at the current microphone
-        P_crnt(imic) = scatteredPressure(r,r0,pp_simu);
-        
-        if pp_simu.doplot
-            [xr_plt,yr_plt,zr_plt] = sph2cart(phi_m,theta_m,r_m);    
-            plot3(xr_plt,yr_plt,zr_plt,'rx')
-            plot3(Rm(imic,1),Rm(imic,2),Rm(imic,3),'ko')
-            grid on
-            view(30 + imic * 0.5,30);            
-            pause(.1)
-        end
+        P_crnt(imic) = scatteredPressure(r,r0,pp_simu);       
         
     end
     
-    P = P + P_crnt;
+    % Total sound field is the sum of each contibution (in the case of a
+    % multisources simulation)
+    
+    P_tot = P_tot + P_crnt;
 end
 
 

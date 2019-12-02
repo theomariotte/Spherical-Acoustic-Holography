@@ -78,10 +78,10 @@ else
     %%% Compute
     if pp.regularization 
 
-        X_prod = X * (conj(X))';
+        X_prod = X' * X;
         I = eye(size(X_prod));
 
-        X = X_prod + alpha * I;
+        X = X_prod + pp.alpha * I;
 
         if pp.compute_condition
             [~,Sigma,~] = svd(X);
@@ -90,17 +90,24 @@ else
             condition = max_S/min_S;
             varargout{1} = condition;
         end
+        
+        X_reg_inv = pinv(X);
 
-        Ymn_reg_inv = pinv(X);
-
-        X_inv = (conj(X))' * Ymn_reg_inv ;
+        X_inv = X_reg_inv  * X';
 
     else
-        [U,Sigma,Vh] = svd(X);
+        [U,Sigma,V] = svd(X);
         % inversion Xinv = U^h * inv(Sigma) * V
         Sigma_inv = pinv(Sigma);
-        X_inv = Vh' * Sigma_inv * U';
+        X_inv = V * Sigma_inv * U';        
+%         X_inv = pinv(X);
         
+        figure
+        plot(diag(Sigma),'kx')
+        grid on
+        xlabel('Singular value index')
+        ylabel('Singular values \sigma_i')
+
         if pp.compute_condition            
             max_S = max(max(diag(Sigma)));
             min_S = min(min(diag(Sigma)));                              

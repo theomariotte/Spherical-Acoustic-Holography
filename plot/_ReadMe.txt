@@ -4,6 +4,10 @@ Fonctions permettant de tracer diverses grandeurs.
 
 Contenu du dossier :
 
+pressureMeasurementVisu : visualisation du champ de pression mesuré par l'antenne sur une sphère. 
+Le champ est interpolé sur un nombre de points déterminé par l'utilisateur puis tracé en couleurs
+sur une sphère.
+
 RadialFuncVisu.m : visualisation des fonctions radiales (Bessel Hankel sphériques). Cette fonction
 permet de tracer les fonctions et leurs dérivées à partir d'un vecteur r. 
 
