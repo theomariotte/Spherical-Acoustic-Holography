@@ -1,6 +1,6 @@
-function [P_reconstruct] = SNAH(theta_m,phi_m,P_meas,pp_reconstruction)
+function [reconstructed_SF] = SNAH(theta_mic,phi_mic,P_meas,pp_reconstruction)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% function [P_reconstruct] = SNAH(P_meas,pp_reconstruction)
+% [reconstructed_SF] = SNAH(theta_mic,phi_mic,P_meas,pp_reconstruction)
 %
 % Function allowing to reconstruct the sound field on a sphere of radius R
 % given the measurements on a spherical microphone array of radius a.
@@ -13,8 +13,8 @@ function [P_reconstruct] = SNAH(theta_m,phi_m,P_meas,pp_reconstruction)
 %   - P_meas : array contaning the measured pressure at a given frequency
 %   (prbem is solved in the frequency domain i.e. for stationary sound
 %   sources).
-%   - theta_m : elevation angle of each microphone
-%   - phi_m : azimuthal angle for each microphone
+%   - theta_mic : elevation angle of each microphone
+%   - phi_mic : azimuthal angle for each microphone
 %   - pp_reconstruction : reconstruction parameters and infos structure.
 %   Parameters are defined below :
 %       + pp_reconstruction.freq = working frequency
@@ -32,7 +32,7 @@ function [P_reconstruct] = SNAH(theta_m,phi_m,P_meas,pp_reconstruction)
 %   - P_reconstruct : reconstructed sound field on the sphere of radius
 %   r = R. 
 %
-% see also solveIllConditionned.m getSphericalHarmonics.m 
+% see also sphericalTFSolver.m getSphericalHarmonics.m 
 %
 % Théo Mariotte - 11/2019 - ENSIM (SNAH project)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -41,114 +41,75 @@ if nargin < 2
     error('Reconstruction parameters should be specified !');
 end 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%% Define some parameters
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Number of microphone on the sphere
-M = size(theta_m,1);
+Nmic = size(theta_mic,1);
 % reconstruction radius
-R = pp_reconstruction.R;
+r_reconstruct = pp_reconstruction.R;
 % radius of the sphere
 a = pp_reconstruction.a;
 % wave number
 k = 2*pi*pp_reconstruction.freq / pp_reconstruction.c;
+% maximal functions order
+Nmax = pp_reconstruction.maxOrder;
 
-% parameters for the Fourier coefficients computation. A pseudo inversion
-% is used in the function
-pp_fourier = struct('regularization',0,...
-            'doplot',0,...
-            'compute_condition',0);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Calcul des coefficients de Fourier
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Get the spherical harmonics matrix Ymat (WIP)
-idx_ = 1;
-for n = 1 : pp_reconstruction.maxOrder
-   for m =  -n : n
-       Ynm = getSphericalHarmonics(theta_m,phi_m,n,m);
-       
-       % Ymat is organized as follow       
-       % Ymat = [[Y00(t1,p1) Y-11(t1,p1) ... YNN(t1,p1)] ;... 
-       %         [Y00(t2,p2) Y-11(t2,p2) ... YNN(t2,p2) ;...
-       %             :         :              :
-       %             :         :              :
-       %         [Y00(tM,pM) Y-11(tM,pM) ... YNN(tM,pM)]
-       
-       Ymat(:,idx_) = Ynm(:);
-       
-       idx_ = idx_ + 1;
-       
+idx = 1;
+Ymat = zeros(Nmic,(Nmax+1)^2);
+
+
+for n = 0 : Nmax      
+   for m = -n : n
+       % Matrice des harmoniques sphériques
+        Y_tmp = getSphericalHarmonics(theta_mic,phi_mic,n,m); 
+        Ymat(:,idx) = Y_tmp;
+        
+        % update
+        idx = idx + 1;        
    end
 end
 
-% Compute Fourier coefficients
-Pmn = solveIllPosedProblem(Ymat,P_meas,pp_fourier);
+% Compute Fourier coefficients for Spherical Fourier Transform (SFT)
+Pmn = sphericalTFSolver(Ymat,P_meas);
 
-% Compute the pressure on the new sphere using a propagator defined as 
-%               Gn(a,r) = jn(kr)hn'(ka)-jn'(ka)hn(kr)
-% See Jacobsen et al. 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% Sound field reconstruction on a bigger sphere
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% init
-% Fourier coef index
-idx_ = 1;
-% reconstructed pressure on the sphere of radius R
-P_reconstruct = zeros(size(theta_m));
+% loop initialization
+idx_coef = 1;
+angleSum = zeros(Nmic,1);
+P_tmp = angleSum;
 
-if ~pp_reconstruction.incidentOnly 
-   for n = 1 : pp_reconstruction.maxOrder
-        % Propagator 
-        [jn_r,~,~,~,~] = SphericalBessel(n,k*R);
-        [hn_r,~,~] = SphericalHankel1(n,k*R);
-        [~,djn_a,~,~,~] = SphericalBessel(n,k*a);
-        [~,dhn_a,~] = SphericalHankel1(n,k*a);
-        Gn = jn_r*dhn_a - djn_a*hn_r;
-
-        % init the sum over n
-        S_tmp = zeros(size(theta_m));    
-        for m =  -n : n
-            % spherical harmonics at the current n & m for each microphone
-            % location
-            Ynm = getSphericalHarmonics(theta_m,phi_m,n,m);
-
-            % update the sum
-            S_tmp = S_tmp .*( Ymn * Pmn(idx_) );
-
-            % upate Fourier coef index
-            idx_ = idx_+1;
-
-        end
-
-        P_reconstruct = P_reconstruct + ( Gn * S_tmp );
+for n = 0 : Nmax
+    % spherical hankel function at the source location
+    [hn_r,~,~] = SphericalHankel1(n,k*r_reconstruct);    
+    % derivative of the spherical hankel function on the surface of the
+    % sphere
+    [~,dhn_a,~] = SphericalHankel1(n,k*a);    
+    % first and second kind bessel function at the microphone location
+    [jn_r,~,~,~,~] = SphericalBessel(n,k*r_reconstruct);    
+    % derivatives of Bessel functions on the surface of the sphere
+    [~,djn_a,~,~,~] = SphericalBessel(n,k*a);
     
-    end 
-else
-    for n = 1 : pp_reconstruction.maxOrder
-        
-        % Propagator 
-        [jn_r,~,~,~,~] = SphericalBessel(n,k*R);
-        [~,dhn_a,~] = SphericalHankel1(n,k*a);
-        Gn = jn_r*dhn_a;
-
-        % init the sum over n
-        S_tmp = zeros(size(theta_m));    
-        for m =  -n : n
-            % spherical harmonics at the current n & m for each microphone
-            % location
-            Ynm = getSphericalHarmonics(theta_m,phi_m,n,m);
-
-            % update the sum
-            S_tmp = S_tmp .*( Ymn * Pmn(idx_) );
-
-            % upate Fourier coef index
-            idx_ = idx_+1;
-
-        end
-
-        P_reconstruct = P_reconstruct + ( Gn * S_tmp );
-
+    % propagator
+    Gn = jn_r * dhn_a - djn_a * hn_r;
+    
+    for m = -n:n
+        angleSum = angleSum + Ymat(:,idx_coef) * Pmn(idx_coef);        
+        idx_coef = idx_coef + 1;
     end
+    
+    P_tmp = P_tmp + Gn * angleSum;
+    angleSum = zeros(Nmic,1);
 end
 
-
-
-P_reconstruct = -1i * (k*a)^2 * P_reconstruct;
-
+reconstructed_SF = -1j * (k*a)^2 * P_tmp;
 
 end

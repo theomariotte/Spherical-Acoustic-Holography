@@ -101,8 +101,8 @@ hold on
 surf(x_grid,y_grid,z_grid,P2plot)      
 colormap('jet')
 shading('interp')
-% cc = colorbar;
-% cc.Label.String = colorbarLabel;
+cc = colorbar;
+cc.Label.String = colorbarLabel;
 set(gca,'clim',clim);
 
 % source plot

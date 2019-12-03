@@ -4,26 +4,31 @@ close all;
 
 %% Paramètres
 
+% rayon de la sphère de reconstruction
+r_reconstruct = 30e-2;
+
 data_path = 'data/';
 % Tracé de la pression acoustique
 % plt_typ : ('real') real part ; ('dB') decibels ; ('abs') absolute value
-plt_typ = 'abs';
+plt_typ = 'dB';
 
 % Méthode de simulation
 % ('GN') : utilisation de la fonction de Green Neumann (calcul possible
 % uniquement sur la frontière) ; 
 % ('Propagator') Utilise le propagateur
 % défini par Williams dans 'Intensity vector reconstruction'. 
-sim_method = 'Propagator';
+sim_method = 'GN';
 
 % Microphone array radius
 a = 15e-2;
 % fréquence de travail [Hz]
 f = 100;
 % Maximum order (Bessel, Hankel, SH)
-Nmax = 6;
+Nmax = 3;
 % Noise amp
-nAmp = 0;
+nAmp = 0.01;
+% color limits
+clims = [70 100];
 
 %%% Autres paramètres
 % débit de la source [m^3/s]
@@ -36,14 +41,14 @@ c = 340;
 %% Source location
 
 % cartesian coordinates [m]
-xs = 0.5;
-ys = 0.5;
-zs = 0.5;
+xs = [0.5];
+ys = [0.2];
+zs = [0.5];
 
 Rs = [xs ys zs];
 [rhos,phis,thetas] = sphericalCoordinates(xs,ys,zs);
 
-%% Load microphone locations
+%% Chargement ds coordonnées des microphones (cartésien)
 
 Nmic = 36;
 filename =  '3Dcam36Officiel.txt';
@@ -66,65 +71,35 @@ pp_simu = struct('MaxOrder',Nmax,...
                 'Q',Q,...
                 'method',sim_method,...
                 'doplot',0);
-
-            
+          
 [P] = generateSimu(Rm,Rs,pp_simu);        
 
-%% Calcul des coefficients de Fourier
+pp_simu = struct('MaxOrder',Nmax,...
+                'freq',f,...
+                'SphereRadius',r_reconstruct,...
+                'c',c,...
+                'rho',rho_air,...
+                'Q',Q,...
+                'method',sim_method,...
+                'doplot',0);
 
-idx = 1;
-Ymat = zeros(Nmic,(Nmax+1)^2);
-Pmn_th = zeros((Nmax+1)^2,1);
-k = 2*pi*f / c;
-for n = 0 : Nmax
-    
-    % pour Fourier analytique
-    [hn_r0,~,~] = SphericalHankel1(n,k*rhos);
-    [~,dhn_a,~] = SphericalHankel1(n,k*a);
-    
-   for m = -n : n
-       % Matrice des harmoniques sphériques
-        Y_tmp = getSphericalHarmonics(theta,phi,n,m); 
-        Ymat(:,idx) = Y_tmp;
-                
-        % coefficients de Fourier analytiques
-        Y_source = getSphericalHarmonics(thetas,phis,n,m);
-        Pmn_th(idx) = -4*pi*hn_r0/((k*a)^2*dhn_a) * conj(Y_source); 
-        
-        % update
-        idx = idx + 1;        
-   end
-end
+[P_cmp] = generateSimu(Rm,Rs,pp_simu);        
 
-pp_solve = struct('regularization',1,...
-           'alpha',1e-10,...
-           'doplot',0,...
-           'compute_condition',1);
 P_meas = P + nAmp * randn(size(P));
-[Pmn,cond] = solveIllPosedProblem(Ymat,P,pp_solve);
+%% reconstruction du champ acoustique 
 
+pp_reconstruction = struct('a',a,...
+                        'R',r_reconstruct,...
+                        'freq',f,...
+                        'c',c,...
+                        'maxOrder',Nmax,...
+                        'incidentOnly',0);
+    
+[reconstruct_SF] = SNAH(theta,phi,P_meas,pp_reconstruction);
 
-%% Affichage 
+%% Figures
 
-% Coefficients de Fourier
-hh = figure('Name','Fourier coefficient');
-hold on
-    plot(20*log10(abs(Pmn_th)),'kx');
-    plot(20*log10(abs(Pmn)),'ro');    
-hold off
-xlabel('n')
-ylabel('20log_{10}(|P_{mn}|)')
-title(sprintf('Fourier coefficients : ka = %2.1f',k*a));
-legend('Theoretical','Computed')
-grid on
-set(gca,'ylim',[-100 20])
-
-
-
-
-
-
-
+% pression simulée sur la sphère (interpolée pour une lecture plus simple)
 pp_interp = struct('sphereRadius',a,...
             'numAngle',30,...
             'interpType','natural',...
@@ -133,60 +108,41 @@ pp_interp = struct('sphereRadius',a,...
 pp_plot = struct('showSource',1,...
                 'showMic',0,...
                 'plt_typ',plt_typ,...
-                'clim',[],...
+                'clim',clims,...
                 'fontSize',12,...
                 'freq',f);     
             
-handle = pressureMeasurementVisu(P_meas,Rm,Rs,pp_interp,pp_plot);
+handle1 = pressureMeasurementVisu(P_meas,Rm,Rs,pp_interp,pp_plot);
 
+% Pression reconstruite par méthode d'holographie acoustique sphérique
+pp_interp = struct('sphereRadius',r_reconstruct,...
+            'numAngle',30,...
+            'interpType','natural',...
+            'doplot',0);
+        
+pp_plot = struct('showSource',1,...
+                'showMic',0,...
+                'plt_typ',plt_typ,...
+                'clim',clims,...
+                'fontSize',12,...
+                'freq',f);     
+            
+handle2 = pressureMeasurementVisu(reconstruct_SF,Rm,Rs,pp_interp,pp_plot);
+title('Recontructed Sound Field');
 
-% Pressure field on a sphere with data interpolation (does not work yet)
-% cartesian frame
+% Pression reconstruite attendue (calculée par simulation)
+pp_interp = struct('sphereRadius',r_reconstruct,...
+            'numAngle',30,...
+            'interpType','natural',...
+            'doplot',0);
+        
+pp_plot = struct('showSource',1,...
+                'showMic',0,...
+                'plt_typ',plt_typ,...
+                'clim',clims,...
+                'fontSize',12,...
+                'freq',f);     
+            
+handle3 = pressureMeasurementVisu(P_cmp,Rm,Rs,pp_interp,pp_plot);
+title('Expected Recontructed Sound Field');
 
-
-% [Xsph,Ysph,Zsph] = sph2cart(phiq,thetaq,P2plot);
-% 
-% % tst = convhul(Xsph,Ysph);
-% 
-% % draw a unit sphere
-% [xs,ys,zs]=sphere(max(size(P2plot))-1);
-% xs = a * xs;
-% ys = a * ys;
-% zs = a * zs;
-% 
-% h2 = figure('Name','Pressure on the sphere');
-% hold on
-% surf(xs,ys,zs,P2plot);
-% colormap('jet')
-% shading('interp')
-% % plot3(Rm(:,1),Rm(:,2),Rm(:,3),'ro','color',[.9 .5 .2],'linewidth',3);
-% plot3(Rs(:,1),Rs(:,2),Rs(:,3),'ro','linewidth',3)
-% hold off
-% colorbar
-% xlabel('X','interpreter','latex')
-% ylabel('Y','interpreter','latex')
-% zlabel('Z','interpreter','latex')
-% axis('equal')
-
-% h = figure('Name','Set up');
-% hold on
-% [x,y,z] = sphere(300);
-% x = (a-0.005) * x;
-% y = (a-0.005) * y;
-% z = (a-0.005) * z;
-% 
-% surf(x,y,z,ones(size(x)));
-% colormap('gray')
-% shading('interp')
-% camlight
-% lighting phong
-% plot3(Rm(:,1),Rm(:,2),Rm(:,3),'x','color',[.9 .5 .2],'linewidth',3);
-% plot3(Rs(:,1),Rs(:,2),Rs(:,3),'ro','linewidth',3)
-% grid on
-% axis equal
-% set(gca,'visible','off');
-% hold off
-% xlabel('X','interpreter','latex')
-% ylabel('Y','interpreter','latex')
-% zlabel('Z','interpreter','latex')
-% axis('equal')

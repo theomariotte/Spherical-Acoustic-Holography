@@ -1,4 +1,4 @@
-function [q,varargout] = solveIllPosedProblem(X,s,pp)
+function [q,varargout] = solveIllPosedProblem(X,s,reg_parameter)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % [Pmn] = solveIllPosedProblem(Ymn,p_vec)
 %
@@ -36,9 +36,9 @@ function [q,varargout] = solveIllPosedProblem(X,s,pp)
 
 %%% Initialization
 if nargin < 3
-   pp = struct('regularization',0,...
-               'doplot',1,...
-               'compute_condition',1);
+    % If no regularization parameter is given, simple pseudo-inversion is
+    % computed
+    reg_parameter = 0;
 end
 
 if nargin < 2
@@ -63,70 +63,32 @@ if tst > 1,error('Data vector s must be 1-D array');end
 
 if nMic > maxOrder
     X = X';
-    [nMic,maxOrder] = size(X);
+    [nMic,~] = size(X);
 end
 
 % check the size of the matrix compared to the data vector
-if nMic ~= M, error('Ymn : number of lines should be the same as p_vec'); end
+if nMic ~= M, error('X : number of lines should be the same as p_vec'); end
+ 
 
-% If M==L -> linear system
-if M == 0
-    q = linsolve(X,s);
+X_trans = X';
+X_prod = X * X_trans;        
 
-% Else -> ill posed problem    
-else
-    %%% Compute
-    if pp.regularization 
+I = eye(size(X_prod));
 
-        X_prod = X' * X;
-        I = eye(size(X_prod));
+X = (X_prod + reg_parameter * I);
 
-        X = X_prod + pp.alpha * I;
-
-        if pp.compute_condition
-            [~,Sigma,~] = svd(X);
-            max_S = max(max(Sigma));
-            min_S = min(min(Sigma));
-            condition = max_S/min_S;
-            varargout{1} = condition;
-        end
-        
-        X_reg_inv = pinv(X);
-
-        X_inv = X_reg_inv  * X';
-
-    else
-        [U,Sigma,V] = svd(X);
-        % inversion Xinv = U^h * inv(Sigma) * V
-        Sigma_inv = pinv(Sigma);
-        X_inv = V * Sigma_inv * U';        
-%         X_inv = pinv(X);
-        
-        figure
-        plot(diag(Sigma),'kx')
-        grid on
-        xlabel('Singular value index')
-        ylabel('Singular values \sigma_i')
-
-        if pp.compute_condition            
-            max_S = max(max(diag(Sigma)));
-            min_S = min(min(diag(Sigma)));                              
-            condition = max_S/min_S;
-            varargout{1} = condition;
-        end
-       
-    end
-
-    q = X_inv * s;    
-
+if nargout > 0
+    [~,Sigma,~] = svd(X);
+    max_S = max(max(Sigma));
+    min_S = min(min(Sigma));
+    condition = max_S/min_S;
+    varargout{1} = condition;
 end
 
-%%% plot
-if pp.doplot
-   h = figure('Name','Spherical Fourier Coefficients');
-   plot(q,'k.','markersize',24)
-   grid on
-   title('Fourier coefficients $P_{mn}$','interpreter','latex')   
-end
+X_reg_inv = inv(X);
+
+X_inv = X_trans * X_reg_inv ;
+
+q = X_inv * s;
 
 end
