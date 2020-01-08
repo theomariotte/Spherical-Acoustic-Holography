@@ -7,7 +7,7 @@ close all;
 data_path = 'data/';
 % Tracé de la pression acoustique
 % plt_typ : ('real') real part ; ('dB') decibels ; ('abs') absolute value
-plt_typ = 'abs';
+plt_typ = 'dB';
 
 % Méthode de simulation
 % ('GN') : utilisation de la fonction de Green Neumann (calcul possible
@@ -19,7 +19,7 @@ sim_method = 'GN';
 % Microphone array radius
 a = 15e-2;
 % fréquence de travail [Hz]
-f = 500;
+f = 721;
 % Maximum order (Bessel, Hankel, SH)
 Nmax = 6;
 
@@ -34,10 +34,12 @@ c = 340;
 %% Source location
 
 % cartesian coordinates [m]
-xs = [ .3 ; 0 ; -.6];
-ys = [ .3 ; .5 ; 0];
-zs = [ .3 ; -.3 ; -.3];
-
+% xs = [ .3 ; 0 ; -.6];
+% ys = [ .3 ; .5 ; 0];
+% zs = [ .3 ; -.3 ; -.3];
+xs = [ .3 ];
+ys = [ .3 ];
+zs = [ .3 ];
 Rs = [xs ys zs];
 
 %% Load microphone locations
@@ -55,10 +57,12 @@ Rm = transpose(reshape(mic_loc_tmp,[3 Nmic]));
 pp_simu = struct('MaxOrder',Nmax,...
                 'freq',f,...
                 'SphereRadius',a,...
+                'ReconstructRadius',a,...
                 'c',c,...
                 'rho',rho,...
                 'Q',Q,...
                 'method',sim_method,...
+                'incidentOnly',0,...
                 'doplot',0);
 
             
@@ -70,15 +74,24 @@ pp_interp = struct('sphereRadius',a,...
             'interpType','natural',...
             'doplot',1);
         
-pp_plot = struct('showSource',0,...
-                'showMic',0,...
+pp_plot = struct('showSource',1,...
+                'showMic',1,...
                 'plt_typ',plt_typ,...
-                'clim',[],...
+                'clim',[70 110],...
                 'fontSize',12,...
                 'freq',f);     
-            
+% fig_path = 'C:\Users\Théo\Documents\1_WORK\01_ENSIM\5A\Projet 5A\Rapports\Fiches de suivi\1912_breve_avancement\';
 handle = pressureMeasurementVisu(P,Rm,Rs,pp_interp,pp_plot);
+colormap('gray')
+view(-45,14);
+% fname = sprintf('simu3D_f_%d_view1',f);
+% printFigFmt(handle,fig_path,fname,'.png');
 
+handle2 = pressureMeasurementVisu(P,Rm,Rs,pp_interp,pp_plot);
+colormap('gray')
+view(135,60);
+% fname = sprintf('simu3D_f_%d_view2',f);
+% printFigFmt(handle2,fig_path,fname,'.png');
 
 % Pressure field on a sphere with data interpolation (does not work yet)
 % cartesian frame

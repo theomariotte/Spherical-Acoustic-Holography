@@ -18,8 +18,8 @@ for n = 0 : pp.maxOrder
         source_SH = getSphericalHarmonics(theta_s,phi_s,n,m);
         SH_prod = SH_prod + (mic_SH * conj(source_SH));
     end
-    [hn_r0,~,~] = SphericalHankel1(n,k*r_s);
-    [~,dhna,~] = SphericalHankel1(n,k*pp.a);
+    [hn_r0,~,~] = SphericalHankel2(n,k*r_s);
+    [~,dhna,~] = SphericalHankel2(n,k*pp.a);
     
     Gn_tmp = Gn_tmp + ( (hn_r0/dhna) * SH_prod );
     SH_prod = 0;

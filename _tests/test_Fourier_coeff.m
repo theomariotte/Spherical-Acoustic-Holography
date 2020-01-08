@@ -1,7 +1,7 @@
 % test calcul coefficients de Fourier
 
 clear; clc; 
-% close all
+close all
 
 tmp_home = 'C:\Users\Théo\Documents\1_WORK\01_ENSIM\5A\Projet 5A\Spherical-Aoustic-Holography\';
 data_path = [tmp_home 'data\'];
@@ -12,7 +12,7 @@ a = 15e-2;
 % fréquence de travail [Hz]
 f = 1000;
 % Maximum order (Bessel, Hankel, SH)
-Nmax = 5;
+Nmax = 4;
 
 %%% Autres paramètres
 % débit de la source [m^3/s]
@@ -48,10 +48,12 @@ dointerp = 1;
 pp_simu = struct('MaxOrder',Nmax,...
                'freq',f,...
                'SphereRadius',a,...
+               'ReconstructRadius',a,...
                'c',c,...
                'rho',rho,...
                'Q',Q,...
                'method',sim_method,...
+               'incidentOnly',0,...
                'doplot',0);
 Rs = [xs ys zs];            
 [P] = generateSimu(Rm,Rs,pp_simu);    

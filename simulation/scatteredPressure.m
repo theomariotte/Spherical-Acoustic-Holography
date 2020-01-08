@@ -17,6 +17,9 @@ p_tmp = 0;
 
 % microphone array radius
 a = pp_simu.SphereRadius;
+% where the pressure is reconstructed
+r_reconstruct = pp_simu.ReconstructRadius;
+
 % wave number
 f = pp_simu.freq;
 c = pp_simu.c;
@@ -31,6 +34,10 @@ r_mic = r(1);
 theta_mic = r(2); 
 % elevation angle
 phi_mic = r(3); 
+
+if (r_mic - r_reconstruct) > 1e-4
+    error('Radial microphone location should be the same as the array radius !')
+end
 
 % monopole : 
 % radial location
@@ -50,26 +57,22 @@ for n = 0 : pp_simu.MaxOrder
         Ynm_src = getSphericalHarmonics(theta_src,phi_src,n,m);
         
         % compute the conjugate product and sum over all orders
-        SH_sum = SH_sum + Ynm_mic * conj(Ynm_src);
-        
-%         pp = struct(...
-%             'pltype','3Dsphere',...
-%             'valtype','real',...
-%             'orders',[n m],...
-%             'fontsize',12);
-%         hh = SHvisualization(pp);
+        SH_sum = SH_sum + Ynm_mic * conj(Ynm_src);       
         
     end
 
     % spherical hankel function at the source location
     [hn_r0,~,~] = SphericalHankel1(n,k*r0_src);
     
+    % spherical hnkel function at the receiver location
+    [hn_r,~,~] = SphericalHankel1(n,k*r_reconstruct);
+    
     % derivative of the spherical hankel function on the surface of the
     % sphere
     [~,dhn_a,~] = SphericalHankel1(n,k*a);
     
     % first and second kind bessel function at the microphone location
-    [jn_r,~,yn_r,~,~] = SphericalBessel(n,k*r_mic);
+    [jn_r,~,yn_r,~,~] = SphericalBessel(n,k*r_reconstruct);
     
     % derivatives of Bessel functions on the surface of the sphere
     [~,djn_a,~,dyn_a,~] = SphericalBessel(n,k*a);
@@ -77,28 +80,38 @@ for n = 0 : pp_simu.MaxOrder
     
     switch pp_simu.method
         case 'GN'
-             p_tmp = p_tmp + (hn_r0/dhn_a) * SH_sum;
-             gain = (-1i*rho*c*Q)/(a^2);
+             p_tmp = p_tmp + (conj(hn_r0)/conj(dhn_a)) * SH_sum;
+             gain = -(1i*rho*c*Q)/(a^2);
              
         case 'Propagator'
-            % propagator (see. Williams - Vector intensity recnstruction)
-            Gn = (k*a)^2 * (jn_r * dyn_a - djn_a * yn_r);
+            % cas ou r = a
+            if r_reconstruct == a
+                
+                Gn = hn_r0/dhn_a;
+                
+                p_tmp = p_tmp + Gn * SH_sum;
+                
+                gain = -4*pi/(k*a)^2;
+                
+            % cas ou r != a
+            else
+                % propagator (see. Williams - Vector intensity recnstruction)
+                Gn = (jn_r * dyn_a - djn_a * yn_r);
+%                 Gn = (jn_r - (djn_a/dhn_a)*hn_r) * hn_r0;
+                
+                % sound pressure at the degree n
+                p_tmp = p_tmp + Gn * ( hn_r0/dhn_a ) * SH_sum;
+%                 p_tmp = p_tmp + Gn * SH_sum;
 
-            % sound pressure at the degree n
-            p_tmp = p_tmp + Gn * ( hn_r0/dhn_a) * SH_sum;
+                % gain that multiply the sound pressure
+                gain = -4*pi;
+            end
+
             
-            % gain that multiply the sound pressure
-            gain = -4*pi / ((k*a)^2);
-            
-        case 'Brute'
-            [hn_r,~,~] = SphericalHankel1(n,k*r_mic);
-            Gn = ((jn_r * dhn_a - djn_a * hn_r)./dhn_a) .* hn_r0;
-            p_tmp = p_tmp + Gn * SH_sum;
-            gain = 4*pi*(1i)^n;
         otherwise
             warning('Default case : Green Neumann')
-            p_tmp = hn_r0/dhn_a * SH_sum;
-            gain = (-1i*rho*c*Q)/(a^2);
+             p_tmp = p_tmp + (conj(hn_r0)/conj(dhn_a)) * SH_sum;
+             gain = -(1i*rho*c*Q)/(a^2);
     end
    
 end

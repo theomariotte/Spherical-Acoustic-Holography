@@ -34,19 +34,31 @@ xs = Rs(:,1); ys = Rs(:,2); zs = Rs(:,3);
 
 for isrc = 1 : num_source
     
-    % source location ins spherical coordinates
-    r0 = [rho_src(isrc) theta_src(isrc) phi_src(isrc)];
-    
-    for imic = 1 : num_mic
-                
-        % microphone locations in spherical coordinates
-        r = [rho_mic(imic) theta_mic(imic) phi_mic(imic)];
+    if pp_simu.incidentOnly
         
-        % Sound pressure at the current microphone
-        P_crnt(imic) = scatteredPressure(r,r0,pp_simu);       
+        r0 = [xs(isrc) ys(isrc) zs(isrc)];
         
+        for imic = 1 : num_mic
+            r = [x(imic) y(imic) z(imic)];
+            P_crnt(imic) = incidentPressure(r,r0,pp_simu);
+        end
+        
+    else
+
+        % source location ins spherical coordinates
+        r0 = [rho_src(isrc) theta_src(isrc) phi_src(isrc)];
+
+        for imic = 1 : num_mic
+
+            % microphone locations in spherical coordinates
+            r = [rho_mic(imic) theta_mic(imic) phi_mic(imic)];
+
+            % Sound pressure at the current microphone
+            P_crnt(imic) = scatteredPressure(r,r0,pp_simu);       
+
+        end
+
     end
-    
     % Total sound field is the sum of each contibution (in the case of a
     % multisources simulation)
     

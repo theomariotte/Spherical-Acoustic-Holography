@@ -85,7 +85,7 @@ if nargout > 0
     varargout{1} = condition;
 end
 
-X_reg_inv = inv(X);
+X_reg_inv = pinv(X);
 
 X_inv = X_trans * X_reg_inv ;
 

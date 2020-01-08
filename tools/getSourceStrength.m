@@ -35,8 +35,15 @@ for l = 1 : L
 end
 
 % ill posed system solver
-[q,cdn] = solveIllPosedProblem(GN,P_meas,pp.reg_parameter);
-
-fprintf('Ill-posed system condition number : %.2f\n',cdn)
+N_it = length(pp.reg_parameter);
+if N_it > 1
+    
+    for ii = 1 : N_it
+        [q(:,ii),cdn] = solveIllPosedProblem(GN,P_meas,pp.reg_parameter(ii));
+    end
+    
+else
+    [q,cdn] = solveIllPosedProblem(GN,P_meas,pp.reg_parameter);
+end
 
 end

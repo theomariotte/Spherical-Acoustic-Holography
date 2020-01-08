@@ -57,14 +57,35 @@ k = 2*pi*pp_reconstruction.freq / pp_reconstruction.c;
 Nmax = pp_reconstruction.maxOrder;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Calcul des coefficients de Fourier
+%%% Fourier Coefficients solving
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 idx = 1;
 Ymat = zeros(Nmic,(Nmax+1)^2);
-
-
-for n = 0 : Nmax      
+radial_fact = zeros((Nmax+1)^2,1);
+idx_sup = 1;
+for n = 0 : Nmax    
+    % spherical hankel at the reconstruction radius
+    [hn_r,~,~] = SphericalHankel2(n,k*r_reconstruct);        
+    % derivative of the spherical hankel function on the surface of the
+    % sphere
+    [hn_a,dhn_a,~] = SphericalHankel2(n,k*a);    
+    % first and second kind bessel function at the microphone location
+    [jn_r,~,yn_r,~,~] = SphericalBessel(n,k*r_reconstruct);    
+    % derivatives of Bessel functions on the surface of the sphere
+    [jn_a,djn_a,~,~,~] = SphericalBessel(n,k*a);
+    
+%     fact_n = jn_r / (jn_a - (djn_a/dhn_a)*hn_a);
+    if ~pp_reconstruction.incidentOnly
+        fact_n = jn_r * dhn_a - djn_a*hn_r;
+    else
+        fact_n = jn_r * dhn_a;
+    end
+    
+    idx_inf = idx_sup;
+    idx_sup = idx_inf + 2*n;
+    radial_fact(idx_inf : idx_sup) = repmat(fact_n,1,2*n+1);
+    
    for m = -n : n
        % Matrice des harmoniques sphériques
         Y_tmp = getSphericalHarmonics(theta_mic,phi_mic,n,m); 
@@ -73,43 +94,52 @@ for n = 0 : Nmax
         % update
         idx = idx + 1;        
    end
+   idx_sup = idx_sup+1;
 end
 
 % Compute Fourier coefficients for Spherical Fourier Transform (SFT)
 Pmn = sphericalTFSolver(Ymat,P_meas);
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%% Sound field reconstruction on a bigger sphere
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% reconstruction
+reconstructed_SF = 1j * (k*a)^2 * (Ymat * (radial_fact .* Pmn));
 
-% loop initialization
-idx_coef = 1;
-angleSum = zeros(Nmic,1);
-P_tmp = angleSum;
-
-for n = 0 : Nmax
-    % spherical hankel function at the source location
-    [hn_r,~,~] = SphericalHankel1(n,k*r_reconstruct);    
-    % derivative of the spherical hankel function on the surface of the
-    % sphere
-    [~,dhn_a,~] = SphericalHankel1(n,k*a);    
-    % first and second kind bessel function at the microphone location
-    [jn_r,~,~,~,~] = SphericalBessel(n,k*r_reconstruct);    
-    % derivatives of Bessel functions on the surface of the sphere
-    [~,djn_a,~,~,~] = SphericalBessel(n,k*a);
-    
-    % propagator
-    Gn = jn_r * dhn_a - djn_a * hn_r;
-    
-    for m = -n:n
-        angleSum = angleSum + Ymat(:,idx_coef) * Pmn(idx_coef);        
-        idx_coef = idx_coef + 1;
-    end
-    
-    P_tmp = P_tmp + Gn * angleSum;
-    angleSum = zeros(Nmic,1);
-end
-
-reconstructed_SF = -1j * (k*a)^2 * P_tmp;
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% %%% Sound field reconstruction on a bigger sphere
+% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 
+% % loop initialization
+% idx_coef = 1;
+% anglularSum = zeros(Nmic,1);
+% P_tmp = anglularSum;
+% 
+% for n = 0 : Nmax
+%     
+%     % spherical hankel function at the source location
+%     [hn_r,~,~] = SphericalHankel1(n,k*r_reconstruct);    
+%     % derivative of the spherical hankel function on the surface of the
+%     % sphere
+%     [~,dhn_a,~] = SphericalHankel1(n,k*a);    
+%     % first and second kind bessel function at the microphone location
+%     [jn_r,~,~,~,~] = SphericalBessel(n,k*r_reconstruct);    
+%     % derivatives of Bessel functions on the surface of the sphere
+%     [jn_a,djn_a,~,~,~] = SphericalBessel(n,k*a);
+%     
+%     % propagator
+%     if pp_reconstruction.incidentOnly
+%         Gn = jn_r * dhn_a;
+%     else
+%         Gn = jn_r * dhn_a - djn_a * hn_r;
+%     end
+%     
+%     for m = -n:n
+%         anglularSum = anglularSum + Ymat(:,idx_coef) * Pmn(idx_coef);        
+%         idx_coef = idx_coef + 1;
+%     end
+%     
+%     P_tmp = P_tmp + Gn * anglularSum;
+%     anglularSum = zeros(Nmic,1);
+% end
+% 
+% reconstructed_SF = -1j * (k*a)^2 * P_tmp;
 
 end

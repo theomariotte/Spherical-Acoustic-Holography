@@ -94,7 +94,12 @@ switch pp_plot.plt_typ
 end
 
 % open the figure and plot
-handle = figure('Name','Sound pressure on the sphere');
+if nargout > 0
+    handle = figure('Name','Sound pressure on the sphere');
+else 
+    handle = [];
+end
+
 hold on
 
 % surface plot of the sound field
@@ -108,13 +113,15 @@ set(gca,'clim',clim);
 % source plot
 if pp_plot.showSource
     xs = Rs(:,1); ys = Rs(:,2); zs = Rs(:,3);
-    plot3(xs,ys,zs,'ro','linewidth',3)
+    plot3(xs,ys,zs,'ko','linewidth',3)
 end
 
 % transducers plot
 if pp_plot.showMic
+    x = Rm(:,1); y = Rm(:,2) ; z = Rm(:,3);
     plot3(x,y,z,...
-        'linestyle','.',...
+        'linestyle','none',...
+        'Marker','.',...
         'linewidth',5,...
         'color',[.5 .5 .5],...
         'markersize',12);
@@ -136,3 +143,5 @@ end
 
 axis('equal')
 grid on
+
+
