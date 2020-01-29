@@ -53,7 +53,7 @@ varargout{1} = 0;
 [M,tst] = size(s);
 
 if tst > M
-    s = s';
+    s = s.';
     [M,tst] = size(s);
 end
 
@@ -62,7 +62,7 @@ if tst > 1,error('Data vector s must be 1-D array');end
 [nMic,maxOrder] = size(X);
 
 if nMic > maxOrder
-    X = X';
+    X = X.';
     [nMic,~] = size(X);
 end
 

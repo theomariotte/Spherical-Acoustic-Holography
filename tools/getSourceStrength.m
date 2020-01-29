@@ -37,13 +37,13 @@ end
 % ill posed system solver
 N_it = length(pp.reg_parameter);
 if N_it > 1
-    
+    q = zeros(L,N_it);
     for ii = 1 : N_it
-        [q(:,ii),cdn] = solveIllPosedProblem(GN,P_meas,pp.reg_parameter(ii));
+        [q(:,ii),~] = solveIllPosedProblem(GN,P_meas,pp.reg_parameter(ii));
     end
     
 else
-    [q,cdn] = solveIllPosedProblem(GN,P_meas,pp.reg_parameter);
+    [q,~] = solveIllPosedProblem(GN,P_meas,pp.reg_parameter);
 end
 
 end

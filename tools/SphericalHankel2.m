@@ -8,7 +8,7 @@ function [hn,diff_hn,r] = SphericalHankel2(n,r_in)
 % The Hankel function is also differentiated using finite differences
 % estimation of each Bessel function.
 %
-% see also SphericalBessel gradient
+% see also SphericalBessel
 %
 % Théo Mariotte - 16/10/2019 - S-NAH (ENSIM)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

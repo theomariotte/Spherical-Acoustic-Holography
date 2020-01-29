@@ -68,6 +68,17 @@ pp_simu = struct('MaxOrder',Nmax,...
             
 [P] = generateSimu(Rm,Rs,pp_simu);        
 
+%% sauvegarde de la simulation sous forme d'un fichier .MAT
+
+fname = sprintf('simu_sphere_%s_f_%d_N_%d',sim_method,f,Nmax);
+data2save{1} = pp_simu;
+data2save{2} = Rs;
+data2save{3} = Rm;
+data2save{4} = P;
+
+save([data_path fname '.mat'],'data2save');
+
+
 %% Affichage 
 pp_interp = struct('sphereRadius',a,...
             'numAngle',30,...

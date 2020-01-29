@@ -16,7 +16,8 @@ N_src_y = 15;
 N_src_z = 15;
 
 % regularization parameter
-reg_param = [1e-1 1e-2 1e-3 1e-4 1e-5];
+num_reg = 500;
+reg_param = linspace(1e-5,10,num_reg);
 
 % Microphone array radius
 a = 15e-2;
@@ -110,20 +111,41 @@ pp_simu = struct('MaxOrder',Nmax,...
 
 P_meas = P + nAmp * randn(size(P));
 
-%% Compute the strength of each source
+%% Compute the transfert matrix based on the Green Neumann function 
+Gn = getGreenNeumannFRF(ES_loc,mic_loc,Nmax,k,a);
 
-pp = struct('c',c,...
-            'a',a,...
-            'freq',f,...
-            'maxOrder',Nmax,...
-            'reg_parameter',reg_param);
+%% Solve the inverse problem using regularization
+GCV = zeros(num_reg,1);
+for i_lambda = 1 : num_reg
+    
+    % solve ill conditionned problem
+    lambda = reg_param(i_lambda);
+    q = solveIllPosedProblem(Gn,P_meas,lambda);
 
-[q,GN_mat] = getSourceStrength(P_meas,mic_loc,ES_loc,pp);
-
-if length(reg_param) == 1
+    % for testing
     q_mat = reshape(q,sz);
-    p_test = GN_mat * q;
+    p_test = Gn * q;
+
+    %% Generalised cross validation to get the optimal regularisation parameter
+    lambda = reg_param(i_lambda);
+    G_prod = Gn'*Gn ;
+    I = eye(size(G_prod));
+    inv_mat = inv(G_prod + lambda * I);
+    B = Gn * (inv_mat * Gn');
+    den = (1/Nmic * sum( diag( eye(size(B)) -B ) ) )^2;
+    GCV(i_lambda) = 1/Nmic * norm(1 - B*P_meas)^2 / den;
+    
 end
+
+
+h = figure('Name','GCV');
+plot(reg_param,abs(GCV),'k','linewidth',2);
+xlabel('Regularization parameter \mu');
+ylabel('GCV')
+grid on
+
+
+return;
 %% Targeted sound pressure on the reconstrucito axis
 
 % grille de reconstruction sur l'axe radial
@@ -138,7 +160,6 @@ R_cmp = sqrt(sum(rm.^2,2));
 G_cmp = exp(-1i*k*R_cmp)./(4*pi*R_cmp);
 p_cmp = 1i*(2*pi*f)*rho_air*Q*G_cmp;
 
-
 %% Compute the free field Green function for each microphone/source couple
 
 % Grille de reconstruction sur l'axe radial
@@ -151,90 +172,44 @@ R_reconstruc = [x_reconstruc y_reconstruc z_reconstruc];
 
 M = length(x_reconstruc);
 L = size(q,1);
-G = zeros(size(GN_mat));
+G = zeros(size(Gn));
 
-for ii = 1 : size(q,2)
-
-    % Loop over reconstruction virtual microphones
-    for m = 1 : M    
-        % location of the current reconstructio mic
-        r_m = R_reconstruc(m,:);      
-        % Loop over each equivalent source    
-        for l = 1 : L
-            % Location of the current equivalent source
-            r0 = ES_loc_cart(l,:);
-            R = norm(r_m - r0);
-            G(m,l) = exp(-1i * k * R)/(4*pi*R);         
-        end
+% Loop over reconstruction virtual microphones
+for m = 1 : M    
+    % location of the current reconstructio mic
+    r_m = R_reconstruc(m,:);      
+    % Loop over each equivalent source    
+    for l = 1 : L
+        % Location of the current equivalent source
+        r0 = ES_loc_cart(l,:);
+        R = norm(r_m - r0);
+        G(m,l) = exp(-1i * k * R)/(4*pi*R);         
     end
+end
 
-    % incident sound field reconstruction
-    p_i = G * q(:,ii);
-    
-    % test de reconstruction
-    pref = 20e-6;
-    hh = figure('Name',sprintf('Test de reconstruction mu = %.1e',reg_param(ii)));
-    hold on
-    plot(flipud(xs - x_tst),flipud(20*log10(abs(p_cmp/pref))),'--k','linewidth',2)
-    plot(flipud(xs-x_reconstruc),flipud(20*log10(abs(p_i/pref))),'color',[.5 .5 .5],'linewidth',3);
-    hold off
-    xlabel('location on the reconstruted axis','interpreter','latex')
-    ylabel('SPL [dB]','interpreter','latex')
-    grid on
-    legend('Simulation','Reconstruction')
-    title(['$\mu = $' sprintf('%.1e',reg_param(ii))],'interpreter','latex')
-    set(gca,'fontsize',12)
+% incident sound field reconstruction
+p_i = G * q;
+
+% test de reconstruction
+pref = 20e-6;
+hh = figure('Name',sprintf('Test de reconstruction mu = %.1e',reg_param));
+hold on
+plot(flipud(xs - x_tst),flipud(20*log10(abs(p_cmp/pref))),'--k','linewidth',2)
+plot(flipud(xs-x_reconstruc),flipud(20*log10(abs(p_i/pref))),'color',[.5 .5 .5],'linewidth',3);
+hold off
+xlabel('Distance to the source [m]','interpreter','latex')
+ylabel('SPL [dB]','interpreter','latex')
+grid on
+legend('Simulation','Reconstruction')
+title(['$\mu = $' sprintf('%.1e',reg_param)],'interpreter','latex')
+set(gca,'fontsize',12)
  
     
 %     fig_path = 'C:\Users\Théo\Documents\1_WORK\01_ENSIM\5A\Projet 5A\Rapports\Fiches de suivi\1912_breve_avancement\';
 %     fname = sprintf('SESM_f_%d',round(f));
 %     printFigFmt(hh,fig_path,fname,'eps');
-end
 
-%% figures
-if length(reg_param) == 1
-    % pression simulée sur la sphère (interpolée pour une lecture plus simple)
-    pp_interp = struct('sphereRadius',a,...
-                'numAngle',30,...
-                'interpType','natural',...
-                'doplot',0);
 
-    pp_plot = struct('showSource',1,...
-                    'showMic',0,...
-                    'plt_typ',plt_typ,...
-                    'clim',[],...
-                    'fontSize',12,...
-                    'freq',f);              
-
-    handle1 = pressureMeasurementVisu(P_meas,Rm,Rs,pp_interp,pp_plot);
-    colormap('gray')
-
-    hold(gca,'on')
-    plot3(X_es,Y_es,Z_es,'o','color',[.5 .5 .5]);
-    hold(gca,'off')
-
-    figure('Name','Equivalent sources strength')
-    surf(Y_es,Z_es,abs(q_mat))
-    colormap('jet')
-    shading('interp')
-    xlabel('Y')
-    ylabel('Z')
-
-    pp_interp = struct('sphereRadius',a,...
-                'numAngle',30,...
-                'interpType','natural',...
-                'doplot',0);
-
-    pp_plot = struct('showSource',1,...
-                    'showMic',0,...
-                    'plt_typ',plt_typ,...
-                    'clim',[],...
-                    'fontSize',12,...
-                    'freq',f);     
-
-    handle2= pressureMeasurementVisu(p_test,Rm,Rs,pp_interp,pp_plot);
-    title('Reconstruction of the sound field on the sphere','interpreter','latex')
-end
 
 
 
