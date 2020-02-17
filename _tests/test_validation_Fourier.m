@@ -21,7 +21,7 @@ f = 721;
 % Maximum order (Bessel, Hankel, SH)
 Nmax = 4;
 % Noise amp
-nAmp = 0.005;
+nAmp = 0.00;
 % color limits
 clims = [70 100];
 
@@ -68,7 +68,7 @@ pp_simu = struct('MaxOrder',Nmax,...
                 'method',sim_method,...
                 'incidentOnly',0,...
                 'doplot',0);
-[P] = generateSimu(Rm,Rs,pp_simu); 
+[P] = generateSimu(Rm,Rs,pp_simu,0); 
 
 % RSB computation
 num_RSB = max(max(abs(P)));
@@ -140,7 +140,7 @@ legend('Theoretical','Computed')
 grid on
 set(gca,'ylim',[-100 20],'fontsize',12)
 
-fig_path = 'C:\Users\Théo\Documents\1_WORK\01_ENSIM\5A\Projet 5A\Rapports\Fiches de suivi\1912_breve_avancement\';
+fig_path = 'Figures/';
 fname = sprintf('FOURIER_f_%d_RSB_%d',f,round(RSB));
 printFigFmt(hh,fig_path,fname,'eps');
 

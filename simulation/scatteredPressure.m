@@ -10,7 +10,6 @@ function p = scatteredPressure(r,r0,pp_simu)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Initialization
-SH_sum = 0;
 p_tmp = 0;
 
 %%% some parameters
@@ -22,10 +21,11 @@ r_reconstruct = pp_simu.ReconstructRadius;
 
 % wave number
 f = pp_simu.freq;
+w = 2*pi*f;
 c = pp_simu.c;
 rho = pp_simu.rho;
 Q = pp_simu.Q;
-k = (2*pi*f)/c;
+k = w/c;
 
 % microphone : 
 % radial location
@@ -48,7 +48,11 @@ theta_src = r0(2);
 phi_src = r0(3); 
 
 for n = 0 : pp_simu.MaxOrder
-   
+    % sum of the product between spherical harmonics at the receiver
+    % location and at the source location. 
+    % The sum is reset to 0 at each loop over n (see Green Neumann)
+    SH_sum = 0;
+    
     for m = -n : n
        
         % compute the spherical harmonics for the current source and
@@ -62,61 +66,19 @@ for n = 0 : pp_simu.MaxOrder
     end
 
     % spherical hankel function at the source location
-    [hn_r0,~,~] = SphericalHankel1(n,k*r0_src);
-    
-    % spherical hnkel function at the receiver location
-    [hn_r,~,~] = SphericalHankel1(n,k*r_reconstruct);
+    [hn_r0,~,~] = SphericalHankel2(n,k*r0_src);
     
     % derivative of the spherical hankel function on the surface of the
     % sphere
-    [~,dhn_a,~] = SphericalHankel1(n,k*a);
-    
-    % first and second kind bessel function at the microphone location
-    [jn_r,~,yn_r,~,~] = SphericalBessel(n,k*r_reconstruct);
-    
-    % derivatives of Bessel functions on the surface of the sphere
-    [~,djn_a,~,dyn_a,~] = SphericalBessel(n,k*a);
-    
-    
-    switch pp_simu.method
-        case 'GN'
-             p_tmp = p_tmp + (conj(hn_r0)/conj(dhn_a)) * SH_sum;
-             gain = -(1i*rho*c*Q)/(a^2);
+    [~,dhn_a,~] = SphericalHankel2(n,k*a);
+
+    p_tmp = p_tmp + (hn_r0/dhn_a) * SH_sum;
              
-        case 'Propagator'
-            % cas ou r = a
-            if r_reconstruct == a
-                
-                Gn = hn_r0/dhn_a;
-                
-                p_tmp = p_tmp + Gn * SH_sum;
-                
-                gain = -4*pi/(k*a)^2;
-                
-            % cas ou r != a
-            else
-                % propagator (see. Williams - Vector intensity recnstruction)
-                Gn = (jn_r * dyn_a - djn_a * yn_r);
-%                 Gn = (jn_r - (djn_a/dhn_a)*hn_r) * hn_r0;
-                
-                % sound pressure at the degree n
-                p_tmp = p_tmp + Gn * ( hn_r0/dhn_a ) * SH_sum;
-%                 p_tmp = p_tmp + Gn * SH_sum;
-
-                % gain that multiply the sound pressure
-                gain = -4*pi;
-            end
-
-            
-        otherwise
-            warning('Default case : Green Neumann')
-             p_tmp = p_tmp + (conj(hn_r0)/conj(dhn_a)) * SH_sum;
-             gain = -(1i*rho*c*Q)/(a^2);
-    end
    
 end
 
 % sound pressure measured by the current microphone
+gain = -(1i*rho*w*Q)/(k*a^2);
 p = gain * p_tmp;
 
 end

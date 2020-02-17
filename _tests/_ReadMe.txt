@@ -1,23 +1,21 @@
 Spherical acoustic holography/_tests
 
-Dossier contenant les scripts de test de différentes partie du code de reconstruction. 
+Dossier contenant les scripts de test de diffrentes partie du code de reconstruction. 
 
-test_Fourier_coeff.m : test de calcul des coefficients de Fourier sphériques (TF sphérique). 
-Le calcul réalisé dans cette fonction n'a pas été validé car les résultats de la simulation
-ne sont pas encore vérifiés. 
+test_validation_Fourier.m : calcul des coefficients de fourier (pour la mthode d'holographie sphrique uniquement, pas pour les sources quivalentes)
 
-test_jn_hn.m : test de calcul des fonctions de Bessel et de Hankel sphériques + dérivées
+test_jn_hn.m : test de calcul des fonctions de Bessel et de Hankel sphriques + drives
 
-test_propagator.m : calcul du propagateur donné par Williams dans "Intensity vector reconstruction ..."
-Deux calculs sont réalisés et permettent de valider le calcul des fonctions de Bessel et Hankel 
-sphériques ainsi que le calcul des harmoniques sphériques. 
+SESM_from_meas.m : calcul de la reconstruction ˆ partir de mesures (implmentation en cours)
 
 test_simu_meas.m : calcul d'une simulation ( = calculer le champ sur la surface d'une sphère rigide 
 en des points discrets lorsqu'un ou plusieurs monopoles rayonnent). Perte de générer son propre 
-réseau de microphones ou d'utiliser les coordonnées de la sphère du LAUM. (Résultats étranges,
-à vérifier)
+réseau de microphones ou d'utiliser les coordonnées de la sphère du LAUM. 
 
-test_spherical_harmonics : est du calcul des harmoniques sphériques, comparaison avec quelques 
-valeurs analytiques données par Williams et tracé. 
+test_spherical_harmonics : calcul des harmoniques sphriques et validation avec Williams
+
+test_SESM : calcul d'une reconstruction avec un ou plusieurs monop™le(s) avec plusieurs mthodes de rgularisation (tikhonov ou lsqr)
+
+test_optimalRegularization : calcul du paramtre de reg. Optimal en utilisant Generalized Cross Validation
 
 

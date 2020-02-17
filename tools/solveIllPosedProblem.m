@@ -1,94 +1,119 @@
-function [q,varargout] = solveIllPosedProblem(X,s,reg_parameter)
+function [q] = solveIllPosedProblem(G,p,regType,regParam)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% [Pmn] = solveIllPosedProblem(Ymn,p_vec)
+% [Pmn] = solveIllPosedProblem(X,s,regType,regParam)
 %
 % This function solves an ill-posed problem. That means that the system 
-%                               X.q = s
+%                               G.q = p
 % cannot be solved as a linear system. 
-% A singular value decomposition is used in the pinv algorithm to solve
-% this type of problem. 
 %
-% Variables :
-% The unknown vector q is composed of L elements.
-% The data vector s is composed of M elements.
-% The matrix X is composed of [MxL] elements. 
+% To solve this problem, three regularization methods are investigated : 
+%   - Tickhonov which consists in solving G' (G.G' + uI)^-1 p, where "u" is
+%   the regularization parameter 
 %
-% If the problem is well-posed (M=L), the function is using a classical
-% linear system solver.
-% 
-% Structure pp :
+%   - lsqr which sole Gq = p using iterative algorithm (based on conjugate
+%   gradient)
 %
-% Default :     pp = struct('regularization',0,...
-%                           'doplot',1,...
-%                           'compute_condition',1);
+%   - TSVD which truncates the singular value decomposition to r values.
+%   Here, r is the regularization parameter.
 %
-% pp.regularization : if 1, Tychonov regularization is made to improve the
-%                     solution
-% pp.doplot : if 1, plot the obtained data
-% pp.compute_condition : if 1, the function returns the condition which is
-% the ratio between the maximal sigular value and the minimal. This gives
-% information on the quality of the pseudo inversion. 
+% Input :
+%   * G : FRF matrix to be inverted
+%   * p : measured pressure vector
+%   * regType : type of regularization ('tikhonov','lsqr','TSVD')
+%   * regParam : regularization parameter (should match with the choosen
+%   regularization method)
 %
-% see also pinv
+% Output :
+%   * q : solution of the problem
 %
 % Théo Mariotte - 2019/10/24 - S-NAH (ENSIM)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %%% Initialization
-if nargin < 3
+if nargin < 4
     % If no regularization parameter is given, simple pseudo-inversion is
     % computed
-    reg_parameter = 0;
+    if nargin == 3
+        switch regType
+            case 'tikhonov'
+                regParam = 1e-5;
+            case 'lsqr'
+                regParam = 1e-6;
+            case 'tsvd'
+                regParam = 10;
+            otherwise
+                regType = 'lsqr';
+                regParam = 1e-6;
+                warning('Default LSQR method used with tol = %1.2e',regParam);
+        end
+    else
+        error('Please define a regularization method');
+    end
+    
+    warning('Reg method %s : default reg. param used r=%1.2g',regType,regParam);
 end
 
 if nargin < 2
     error('One matrix and one vector should be defined to solve the problem !')
 end
 
-nout = nargout - 1;
-if nout > 0, pp.compute_condition = 1; end
+p = shiftdim(p);
 
-varargout{1} = 0;
+if size(p,2) > 1,error('Data vector p must be 1-D array');end
 
-[M,tst] = size(s);
-
-if tst > M
-    s = s.';
-    [M,tst] = size(s);
+if size(G,1) ~= size(p,1)
+    if size(G,2) == size(p,1)
+        G = G';
+    else
+       error('Number of rows in G should be the same as in p') 
+    end
 end
-
-if tst > 1,error('Data vector s must be 1-D array');end
-
-[nMic,maxOrder] = size(X);
-
-if nMic > maxOrder
-    X = X.';
-    [nMic,~] = size(X);
-end
-
-% check the size of the matrix compared to the data vector
-if nMic ~= M, error('X : number of lines should be the same as p_vec'); end
  
+switch regType
+    
+    case 'tikhonov'
+        
+        X_trans = G';
+        X_prod = G * X_trans;        
 
-X_trans = X';
-X_prod = X * X_trans;        
+        I = eye(size(X_prod));
 
-I = eye(size(X_prod));
+        G = (X_prod + regParam * I);
 
-X = (X_prod + reg_parameter * I);
+        % inverse
+        X_inv = X_trans / G ;
+        q = X_inv * p;
+        
+    case 'lsqr'
+        
+        nmax = 200;
+        q = lsqr(G,p,regParam,nmax);
+        
+    case 'tsvd'
+        
+        [U,S,V] = svd(G);
+        
+        if regParam < 1, error('TSVD : regularization parameter should be a positive integer !');end
+        
+        % if the reg parameter is not an integer value
+        r = round(regParam);
+        
+        % truncation of sigular values 
+        U = U(:,1:r);
+        V = V(:,1:r);
+        S = S(1:r,1:r);
+        
+        X_inv = V * ( 1./S * U' );
+        
+        q = X_inv * p;
+        
+    otherwise
+        regParam = 1e-6;
+        nmax = 200;
+        q = lsqr(G,p,regParam,nmax);
 
-if nargout > 0
-    [~,Sigma,~] = svd(X);
-    max_S = max(max(Sigma));
-    min_S = min(min(Sigma));
-    condition = max_S/min_S;
-    varargout{1} = condition;
+        warning('No regularization method found. LSQR as default with %1.2e tolerance.',regParam);
+        
 end
-
-X_reg_inv = pinv(X);
-
-X_inv = X_trans * X_reg_inv ;
-
-q = X_inv * s;
 
 end

@@ -66,7 +66,7 @@ pp_simu = struct('MaxOrder',Nmax,...
                 'doplot',0);
 
             
-[P] = generateSimu(Rm,Rs,pp_simu);        
+[P] = generateSimu(Rm,Rs,pp_simu,0);        
 
 %% sauvegarde de la simulation sous forme d'un fichier .MAT
 
@@ -93,13 +93,13 @@ pp_plot = struct('showSource',1,...
                 'freq',f);     
 % fig_path = 'C:\Users\Théo\Documents\1_WORK\01_ENSIM\5A\Projet 5A\Rapports\Fiches de suivi\1912_breve_avancement\';
 handle = pressureMeasurementVisu(P,Rm,Rs,pp_interp,pp_plot);
-colormap('gray')
+colormap('jet')
 view(-45,14);
 % fname = sprintf('simu3D_f_%d_view1',f);
 % printFigFmt(handle,fig_path,fname,'.png');
 
 handle2 = pressureMeasurementVisu(P,Rm,Rs,pp_interp,pp_plot);
-colormap('gray')
+colormap('jet')
 view(135,60);
 % fname = sprintf('simu3D_f_%d_view2',f);
 % printFigFmt(handle2,fig_path,fname,'.png');

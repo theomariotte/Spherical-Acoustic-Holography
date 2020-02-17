@@ -1,0 +1,63 @@
+Nom du journal: 12/02/2020 11:03:56
+Utilisateur: pxi
+Nom du projet: D:\Users\pxi\Bureau\Theo\Acquis_Sphere_36.seproj
+Nom du fichier: F:\Theo\12022020_110356\Pression_acoustique.tdms
+Taille du fichier: 87,967kB
+Durée de l'enregistrement: 10 secondes
+dt du journal (s): 50u
+Durée de l'itération du journal (s): 100m
+Nombre d'échantillons dans le journal: 200000
+Type de données du journal: Time-WDT-Real
+Unité: 
+Temps de départ du journal: 12/02/2020 11:03:58,914
+Fuseau horaire: Paris, Madrid
+Nom du logiciel d'écriture: SignalExpress 2015
+Version du logiciel d'écriture: 15.0
+Version du format de fichier: 2.1
+Noms des signaux du journal:
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai0
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai1
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai2
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai3
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai4
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai5
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai6
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai7
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai8
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai9
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai10
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai11
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai12
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai13
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai14
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_01_ENS_ai15
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai0
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai1
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai2
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai3
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai4
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai5
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai6
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai7
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai8
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai9
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai10
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai11
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai12
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai13
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai14
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_02_ENS_ai15
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_03_ENS_ai0
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_03_ENS_ai1
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_03_ENS_ai2
+     12/02/2020 11:03:56 - Pression acoustique - PXI_4496_03_ENS_ai3
+
+
+Alarmes:
+Aucune
+
+Conditions de démarrage:
+Aucune
+
+Conditions d'arrêt:
+Durée: > 10,0000

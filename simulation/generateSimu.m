@@ -1,4 +1,4 @@
-function [P_tot] = generateSimu(Rm,Rs,pp_simu)
+function [P_tot] = generateSimu(Rm,Rs,pp_simu,phasefl)
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Function simulating the pressure measured by an array of microphones. 
 % Locations of microphones can be loaded from a text file (original
@@ -34,6 +34,7 @@ xs = Rs(:,1); ys = Rs(:,2); zs = Rs(:,3);
 
 for isrc = 1 : num_source
     
+    
     if pp_simu.incidentOnly
         
         r0 = [xs(isrc) ys(isrc) zs(isrc)];
@@ -61,7 +62,9 @@ for isrc = 1 : num_source
     end
     % Total sound field is the sum of each contibution (in the case of a
     % multisources simulation)
-    
+   if phasefl == 1 && mod(isrc,2) == 0
+        P_crnt = P_crnt*1j;
+    end
     P_tot = P_tot + P_crnt;
 end
 
