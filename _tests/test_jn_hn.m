@@ -17,8 +17,9 @@ close all;
 %% initialisation
 set(0, 'defaultAxesTickLabelInterpreter','latex'); 
 set(0, 'defaultLegendInterpreter','latex');
-doprint = 1;
-impath = 'H:\Mes documents\5A\Projet_5A\Images\';
+doprint = 0;
+impath = '/Users/theomariotte/Documents/01_work/ENSIM/5A/Projet/Figures/';;
+
 %% paramètres
 dr = .01;
 r_in = 0 : dr : 20;

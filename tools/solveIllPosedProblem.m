@@ -73,16 +73,16 @@ switch regType
     
     case 'tikhonov'
         
-        X_trans = G';
-        X_prod = G * X_trans;        
+        G_trans = G';
+        G_prod = G * G_trans;        
 
-        I = eye(size(X_prod));
+        I = eye(size(G_prod));
 
-        G = (X_prod + regParam * I);
+        G_whole = (G_prod + regParam * I);
 
         % inverse
-        X_inv = X_trans / G ;
-        q = X_inv * p;
+        X_inv = pinv(G_whole) ;
+        q = G' * (X_inv * p);
         
     case 'lsqr'
         

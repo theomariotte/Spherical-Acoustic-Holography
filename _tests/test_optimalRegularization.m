@@ -14,15 +14,15 @@ plt_typ = 'dB';
 sim_method = 'GN';
 
 % number of equivalent sources
-N_src_y = 21;
-N_src_z = 21;
+N_src_y = 41;
+N_src_z = 41;
 
 % regularization parameter
 if strcmp(reg_typ,'lsqr')
     num_reg = 500;
     reg_param = linspace(1e-10,1e-1,num_reg);
 else
-    num_reg = 1000;
+    num_reg = 500;
     reg_param = linspace(1e-5,1,num_reg);
 end
 

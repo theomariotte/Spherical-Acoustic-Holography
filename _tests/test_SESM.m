@@ -4,7 +4,7 @@ close all;
 
 %% Paramètres
 data_path = 'data/';
-
+fig_path = '/Users/theomariotte/Documents/01_work/ENSIM/5A/Projet/Figures/';
 
 % Tracé de la pression acoustique
 % plt_typ : ('real') real part ; ('dB') decibels ; ('abs') absolute value
@@ -15,11 +15,13 @@ sim_method = 'GN';
 ES_typ = 1;
 
 % regularization type ('lsqr : iterative method ; 'tikho' tykhonov reg)
-reg_typ = 'lsqr';
+reg_typ = 'tikhonov';
 
 % regularization parameter : if 'lsqr' this defines the tolerance (< 1), if
-% 'tykho' this defines the so called regularization parameter 
-reg_param = 1e-5;
+% 'tikhonov' this defines the so called regularization parameter 
+reg_param = 1e-4;
+regParamVec = linspace(1e-7,1,1000);
+
 % maximum LSQR iteration number
 maxIt = 200;
 
@@ -30,14 +32,14 @@ ka = 2;
 % Maximum order (Bessel, Hankel, SH)
 Nmax = 4;
 % Noise amp
-nAmp = 0.001;
+nAmp = 0.00001;
 % color limits
 clims = [40 70];
 
 %%% Autres paramètres
 
 % débit de la source [m^3/s]
-Q = 1e-5;
+Q = [1e-5];
 % masse volumique du milieu
 rho_air = 1.2;
 % célérité du milieu 
@@ -49,12 +51,22 @@ w = 2*pi*f;
 k = w/c;
 phasefl = 0;
 
+%% SNR
+
+% source power (power of a point source)
+Ps = rho_air*c*k^2 / 8/pi * abs(Q)^2;
+tsts = 10*log10(Ps/(2e-5^2))
+% noise power
+Pn = nAmp^2;
+% SNR
+SNR = 10*log10(Ps/Pn)
+
 %% Simulation source location
 
 % cartesian coordinates [m]
-xs = [0.2];
-ys = [0.0];
-zs = [0.];
+xs = [0.4];
+ys = [0];
+zs = [0];
 
 Rs = [xs ys zs];
 [rhos,phis,thetas] = sphericalCoordinates(xs,ys,zs);
@@ -63,8 +75,8 @@ Rs = [xs ys zs];
 
 if ES_typ
 
-    N_src_y = 41;
-    N_src_z = 41;
+    N_src_y = 20;
+    N_src_z = 20;
     
     % equivalent sources plane location from the simulated source
     dx = .5e-2;
@@ -139,15 +151,39 @@ Gn = getGreenNeumannFRF(ES_loc,mic_loc,Nmax,k,a);
 
 %% Solve the inverse problem using regularization
 
-% solve ill conditionned problem
-q = solveIllPosedProblem(Gn,P_meas,reg_typ,reg_param);    
+% for k = 1 : length(regParamVec)
+% 
+%     % solve ill conditionned problem
+%     reg_param_tmp = regParamVec(k);
+%     qTmp = solveIllPosedProblem(Gn,P_meas,reg_typ,reg_param_tmp);    
+% 
+%     % L curve
+%     normRes(k) = norm(Gn*qTmp - P_meas);
+%     normQ(k) = norm(qTmp);
+% 
+% end
+% 
+% hhh = figure; 
+% plot(log10(normRes),log10(normQ),'k','linewidth',2);
+% xlabel('Residual norm')
+% ylabel('Q norm')
+% title('L curve validation')
+% 
+% [xTMP,yTMP] = ginput(1);
+% 
+% [~,idxMinTMP] = min(abs(log10(normRes) - xTMP));
+% 
+% reg_param = regParamVec(idxMinTMP);
+q = solveIllPosedProblem(Gn,P_meas,reg_typ,reg_param); 
+
+%delete(hhh);
 
 %% Targeted sound pressure on the reconstruciton axis
 
 % grille de reconstruction sur l'axe radial
 r_start = 0.01;
 da = 0.001;
-x_tst =(r_start : da : xs(1))' ;
+x_tst =(r_start : da : xs(1)-da)' ;
 x_analytic = Rs(1)-x_tst;
 y_analytic = Rs(2)-zeros(size(x_analytic));
 z_analytic =  Rs(3)-zeros(size(x_analytic));
@@ -160,7 +196,7 @@ p_cmp = fact * exp(-1i*k*R_cmp)./(4*pi*R_cmp);
 
 % Reconstruction grid on the radial axis
 dr = 0.001;
-x_reconstruc = (r_start : dr : xs(1))';
+x_reconstruc = (r_start : dr : xs(1)-dr)';
 y_reconstruc = zeros(size(x_reconstruc));
 z_reconstruc = zeros(size(x_reconstruc));
 
@@ -170,6 +206,9 @@ G = getFreeFieldFRF(ES_loc_cart,R_reconstruc,k);
 
 % incident sound field reconstruction
 p_i = G * q;
+
+err = 1/length(p_i) * sum( (abs( abs(p_cmp) - abs(p_i) ) ./ abs(p_cmp) ).^2 )
+
 
 %% reconstruction on a plane 
 
@@ -203,17 +242,19 @@ p_i_far = reshape(p_i_far,sZ);
 % test de reconstruction
 pref = 20e-6;
 if length(xs) < 2    
-    hh = figure('Name','Test de reconstruction LSQR');
+    hh = figure('Name',sprintf('Reconstruction using %s',reg_typ));
     hold on
     plot(flipud(xs - x_tst),flipud(20*log10(abs(p_cmp/pref))),'--k','linewidth',2)
     plot(flipud(xs-x_reconstruc),flipud(20*log10(abs(p_i/pref))),'color',[.5 .5 .5],'linewidth',3);
     hold off
-    xlabel('Distance to the source [m]','interpreter','latex')
-    ylabel('SPL [dB]','interpreter','latex')
+    xlabel('Distance de la source [m]')
+    ylabel('SPL [dB]')
     grid on
     legend('Simulation','Reconstruction')
-    title('Reconstruction using LSQR')
-    set(gca,'fontsize',12)
+    %title('Reconstruction using LSQR')
+    set(gca,'fontsize',20)
+    fname = sprintf('reconstructionXaxisRSB%d',round(SNR));
+    printFigFmt(hh,fig_path,fname,'.eps');
 end
 
 if ES_typ
@@ -262,17 +303,24 @@ handle3= pressureMeasurementVisu(P_meas,Rm,Rs,pp_interp,pp_plot);
 title('Sound pressure measurement (interpolated)','interpreter','latex')
 
 
-figure('Name','Field points');
+handle4 = figure('Name','Field points');
 hold on
 imagesc(xMin:dx:xMax,zMin:dz:zMax,20*log10(abs(p_i_far/pref)),'Interpolation','bilinear')
 contour(xMin:dx:xMax,zMin:dz:zMax,20*log10(abs(p_i_far/pref)),10,'linecolor',[0 0 0])
 ll = rectangle('position',[-a -a 2*a 2*a],'Curvature',[1 1]);
 set(ll,'linewidth',3)
+set(gca,'clim',[40 105])
 hold off
 xlabel('X')
 ylabel('Z')
-title('Reconstruction of the incident pressure over a plane grid')
+%title('Reconstruction of the incident pressure over a plane grid')
 axis equal
+cc = colorbar;
+cc.Label.String = 'dB SPL';
+set(gca,'fontsize',20)
+colormap('jet')
+fname = sprintf('planeReconstructionRSB%d',round(SNR));
+printFigFmt(handle4,fig_path,fname,'.eps');
 
 % pression simulée sur la sphère (interpolée pour une lecture plus simple)
 pp_interp = struct('sphereRadius',a,...

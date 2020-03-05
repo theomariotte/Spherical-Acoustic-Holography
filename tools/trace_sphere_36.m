@@ -1,5 +1,5 @@
 fig=10;
-mic=load('3Dcam36Officiel.txt','-ascii');
+mic=load('data/3Dcam36Officiel.txt','-ascii');
 M=36;
 r=0.15;
 
@@ -41,3 +41,4 @@ zlabel('z')
 axis square
 text(x,y,z,num2str([1:M]'))
 hold off
+axis equal

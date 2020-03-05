@@ -20,11 +20,12 @@ close all;
 %% Initialization
 set(0, 'defaultAxesTickLabelInterpreter','latex'); 
 set(0, 'defaultLegendInterpreter','latex');
+fig_path = '/Users/theomariotte/Documents/01_work/ENSIM/5A/Projet/Figures/';
 
 % enregistrement images
-impath = 'H:\Mes documents\5A\Projet_5A\Images\SphericalHarm\';
-ext = 'eps';
-doprint = 0;
+impath = '/Users/theomariotte/Documents/01_work/ENSIM/5A/Projet/Figures/';
+ext = 'png';
+doprint = 1;
 
 % type de plot
 typ = '3Dplot';
@@ -36,7 +37,7 @@ dx = pi/200;
 docomp = 1;
 
 % Theta : elevation angle
-elev = -pi/2 : dx : pi/2;
+elev = 0 : dx : pi;
 
 % Phi : azimuthal angle
 az = 0 : dx*2 : 2*pi;
@@ -88,7 +89,7 @@ end
 %% Quelques harmoniques sphériques théoriques pour tester (voir Williams)
 
 % angle d'élévation corrigé pour être entre 0 et \pi
-theta_calc = theta + pi/2;
+theta_calc = theta;
 
 % cartesian coordinates
 if n == 2 && m == 0

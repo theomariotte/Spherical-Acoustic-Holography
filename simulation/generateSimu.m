@@ -15,7 +15,10 @@ function [P_tot] = generateSimu(Rm,Rs,pp_simu,phasefl)
 %                        'freq',100,...
 %                        'SphereRadius',0.8,...
 %                        'c',340);
-% 
+% Output parameters : 
+%   - P_tot : sound pressure on the surface of the sphere at each
+%   microphone location. 
+%
 % see also scatteredPressure
 %
 % Théo Mariotte - 2019/10/21 - S-NAH (ENSIM)

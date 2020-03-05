@@ -5,6 +5,8 @@ close all;
 %% Paramètres
 
 data_path = 'data/';
+fig_path = '/Users/theomariotte/Documents/01_work/ENSIM/5A/Projet/Figures/';
+
 % Tracé de la pression acoustique
 % plt_typ : ('real') real part ; ('dB') decibels ; ('abs') absolute value
 plt_typ = 'dB';
@@ -21,11 +23,11 @@ a = 15e-2;
 % fréquence de travail [Hz]
 f = 721;
 % Maximum order (Bessel, Hankel, SH)
-Nmax = 6;
+Nmax = 4;
 
 %%% Autres paramètres
 % débit de la source [m^3/s]
-Q = 1e-3;
+Q = 1e-5;
 % masse volumique du milieu
 rho = 1.2;
 % célérité du milieu 
@@ -70,14 +72,14 @@ pp_simu = struct('MaxOrder',Nmax,...
 
 %% sauvegarde de la simulation sous forme d'un fichier .MAT
 
-fname = sprintf('simu_sphere_%s_f_%d_N_%d',sim_method,f,Nmax);
-data2save{1} = pp_simu;
-data2save{2} = Rs;
-data2save{3} = Rm;
-data2save{4} = P;
-
-save([data_path fname '.mat'],'data2save');
-
+% fname = sprintf('simu_sphere_%s_f_%d_N_%d',sim_method,f,Nmax);
+% data2save{1} = pp_simu;
+% data2save{2} = Rs;
+% data2save{3} = Rm;
+% data2save{4} = P;
+% 
+% save([data_path fname '.mat'],'data2save');
+% 
 
 %% Affichage 
 pp_interp = struct('sphereRadius',a,...
@@ -88,21 +90,25 @@ pp_interp = struct('sphereRadius',a,...
 pp_plot = struct('showSource',1,...
                 'showMic',1,...
                 'plt_typ',plt_typ,...
-                'clim',[70 110],...
+                'clim',[40 70],...
                 'fontSize',12,...
                 'freq',f);     
 % fig_path = 'C:\Users\Théo\Documents\1_WORK\01_ENSIM\5A\Projet 5A\Rapports\Fiches de suivi\1912_breve_avancement\';
 handle = pressureMeasurementVisu(P,Rm,Rs,pp_interp,pp_plot);
 colormap('jet')
-view(-45,14);
-% fname = sprintf('simu3D_f_%d_view1',f);
-% printFigFmt(handle,fig_path,fname,'.png');
+view(70,45);
+set(gca,'fontsize',20)
+
+fname = sprintf('simu3D_f_%d_view1',f);
+printFigFmt(handle,fig_path,fname,'.eps');
+
+
 
 handle2 = pressureMeasurementVisu(P,Rm,Rs,pp_interp,pp_plot);
 colormap('jet')
 view(135,60);
-% fname = sprintf('simu3D_f_%d_view2',f);
-% printFigFmt(handle2,fig_path,fname,'.png');
+fname = sprintf('simu3D_f_%d_view2',f);
+printFigFmt(handle2,fig_path,fname,'.eps');
 
 % Pressure field on a sphere with data interpolation (does not work yet)
 % cartesian frame

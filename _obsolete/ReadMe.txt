@@ -1,1 +1,1 @@
-Codes obsolètes. Appartient à gitIgnore
+Codes obsoltes ou inutiliss. Appartient ˆ gitIgnore

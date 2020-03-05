@@ -15,8 +15,8 @@ function [Xs,Ys,Zs] = randomESLocation(R,Ns,plotfl)
 
 if nargin < 3, plotfl=0;end
 
-theta = randn(Ns,1)*pi;
-phi = randn(Ns,1)*2*pi;
+theta = rand(Ns,1)*pi;
+phi = rand(Ns,1)*2*pi;
 rho = ones(Ns,1) * R;
 
 [Xs,Ys,Zs] = cartesianCoordinates(rho,theta,phi);
