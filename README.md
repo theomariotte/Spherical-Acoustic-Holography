@@ -1,26 +1,18 @@
-# Spherical-Aoustic-Holography
+# Spherical acoustic holography
 
-# Algorithmes permettant de reconstruire le champ acoustique à l'aide d'une antenne sphérique de microphones. 
-# Le champ de pression est mesuré sur une sphère rigide de rayon a. Les méthodes permettent de reconstruire la pression sur une 
-# sphère de rayon r > a. 
+Algorithmes permettant de reconstruire le champ acoustique à l'aide d'une antenne sphérique de microphones. 
+Le champ de pression est mesuré sur une sphère rigide de rayon a. Les méthodes permettent de reconstruire la pression sur une 
+sphère de rayon _r > a_. 
 
-# < WORK IN PROGRESS !>
+This repository proposes an implementation of spherical equivalent sources method [^1]. This method allows soundfield reconstruction outside of a rigid spherical microphone array. 
 
-# Codes contenus dans le dossier ; 
+# Repository organization 
 
-# (*) init_spherical_NAH : à éxécuter avant tout autre code afn d'initialiser tous les chemins dans le PATH de Matlab. 
++ `init_spherical_NAH` : à éxécuter avant tout autre code afn d'initialiser tous les chemins dans le PATH de Matlab. 
++ `_tests` : some tests to validate implementations
++ `data` : data to be used for validation
++ `plot` : plotting functions
++ `simulation` : functions to generate simjulations of soundfield measurements
++ `tools` : tools for signal processing
 
-# Dossiers contenus dans le projet : 
-
-# (*) _tests : codes de test divers
-
-# (*) data : données utiles
-
-# (*) plot : fonctions d'affichage de diverses grandeurs. 
-
-# (*) simulation : fonctions permettant de générer une simulation pour tester 
-# les algorithmes.
-
-# (*) tools : outils divers utiles aux méthodes. 
-
-# Théo Mariotte - 2019/11 - ENSIM
+[^1]: [1]E. Fernandez-Grande, « Sound field reconstruction using a spherical microphone array », The Journal of the Acoustical Society of America, vol. 139, nᵒ 3, p. 1168‑1178, mars 2016, doi: 10.1121/1.4943545.
