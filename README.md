@@ -8,7 +8,7 @@ This repository proposes an implementation of spherical equivalent sources metho
 
 # Repository organization 
 
-+ `init_spherical_NAH` : à éxécuter avant tout autre code afn d'initialiser tous les chemins dans le PATH de Matlab. 
++ `init_spherical_NAH` : initializes Matlab pathes
 + `_tests` : some tests to validate implementations
 + `data` : data to be used for validation
 + `plot` : plotting functions
